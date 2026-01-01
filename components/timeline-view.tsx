@@ -1,26 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Trash2, Pencil, Calendar } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Trash2, Pencil, Calendar, Search, Filter, Plus } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { EditTaskDialog } from "@/components/edit-task-dialog"
 import { CreateTaskDialog } from "@/components/create-task-dialog"
 import { format, startOfMonth, endOfMonth } from "date-fns"
-
-interface Task {
-  id: string
-  title: string
-  description: string | null
-  status: "todo" | "in-progress" | "done"
-  due_date: string | null
-  created_at: string
-  updated_at: string
-  user_id: string
-}
+import type { Task } from "@/lib/types/task"
+import { getStatusColor, getStatusLabel } from "@/lib/utils/task"
 
 interface TimelineViewProps {
   initialTasks: Task[]
@@ -30,20 +23,29 @@ interface TimelineViewProps {
 export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [searchQuery, setSearchQuery] = useState("")
   const supabase = createClient()
   const router = useRouter()
+
+  // Sync initialTasks with state when they change (e.g., after router.refresh())
+  useEffect(() => {
+    setTasks(initialTasks)
+  }, [initialTasks])
 
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(currentMonth)
 
   const handleDelete = async (taskId: string) => {
+    console.log("[Timeline] Deleting task:", taskId)
     const { error } = await supabase.from("tasks").delete().eq("id", taskId).eq("user_id", userId)
 
     if (error) {
-      console.error("[v0] Error deleting task:", error)
+      console.error("[Timeline] Error deleting task:", error)
       return
     }
 
+    console.log("[Timeline] Task deleted successfully")
     setTasks(tasks.filter((task) => task.id !== taskId))
     router.refresh()
   }
@@ -52,36 +54,43 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
     setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)))
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "todo":
-        return "bg-blue-500"
-      case "in-progress":
-        return "bg-amber-500"
-      case "done":
-        return "bg-green-500"
-      default:
-        return "bg-gray-500"
-    }
+  const handleTaskCreated = (newTask: Task) => {
+    console.log("[Timeline] Adding new task to timeline:", newTask.id)
+    setTasks([...tasks, newTask])
   }
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "todo":
-        return "To Do"
-      case "in-progress":
-        return "In Progress"
-      case "done":
-        return "Done"
-      default:
-        return status
-    }
-  }
 
-  const tasksWithDueDate = tasks
+  const filteredTasks = useMemo(() => {
+    let filtered = [...tasks]
+
+    // Filter by status
+    if (statusFilter !== "all") {
+      if (statusFilter === "complete") {
+        filtered = filtered.filter((task) => task.status === "done")
+      } else if (statusFilter === "incomplete") {
+        filtered = filtered.filter((task) => task.status !== "done")
+      } else {
+        filtered = filtered.filter((task) => task.status === statusFilter)
+      }
+    }
+
+    // Search by title or description
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(
+        (task) =>
+          task.title.toLowerCase().includes(query) ||
+          (task.description && task.description.toLowerCase().includes(query)),
+      )
+    }
+
+    return filtered
+  }, [tasks, statusFilter, searchQuery])
+
+  const tasksWithDueDate = filteredTasks
     .filter((task) => task.due_date)
     .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime())
-  const tasksWithoutDueDate = tasks.filter((task) => !task.due_date)
+  const tasksWithoutDueDate = filteredTasks.filter((task) => !task.due_date)
 
   const previousMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))
@@ -98,6 +107,43 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <Card className="flex-1 p-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[160px]">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Tasks</SelectItem>
+                  <SelectItem value="todo">To Do</SelectItem>
+                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="done">Done</SelectItem>
+                  <SelectItem value="complete">Complete</SelectItem>
+                  <SelectItem value="incomplete">Incomplete</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </Card>
+        <CreateTaskDialog onTaskCreated={handleTaskCreated}>
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Task
+          </Button>
+        </CreateTaskDialog>
+      </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={previousMonth}>
@@ -108,9 +154,6 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
             Next
           </Button>
         </div>
-        <CreateTaskDialog>
-          <Button>Add Task</Button>
-        </CreateTaskDialog>
       </div>
 
       {tasksInMonth.length > 0 ? (
@@ -123,11 +166,10 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
             return (
               <Card key={task.id} className="p-4">
                 <div className="flex items-start gap-4">
-                  <div className={`mt-1 h-3 w-3 flex-shrink-0 rounded-full ${getStatusColor(task.status)}`} />
                   <div className="flex-1 space-y-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <h3 className="font-medium">{task.title}</h3>
+                        <h3 className={`font-medium ${task.status === "done" ? "text-muted-foreground line-through" : ""}`}>{task.title}</h3>
                         {task.description && <p className="mt-1 text-sm text-muted-foreground">{task.description}</p>}
                       </div>
                       <div className="flex items-center gap-2">
@@ -147,10 +189,10 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
-                      <Badge variant="secondary">{getStatusLabel(task.status)}</Badge>
+                      <Badge className={getStatusColor(task.status, false)}>{getStatusLabel(task.status)}</Badge>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        Due: {format(dueDate, "MMM d, yyyy 'at' h:mm a")}
+                        Due: {format(dueDate, "MMM d, yyyy")}
                       </div>
                       {isOverdue && (
                         <Badge variant="destructive" className="text-xs">
@@ -159,7 +201,7 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Created: {format(createdDate, "MMM d, yyyy 'at' h:mm a")}
+                      Created: {format(createdDate, "MMM d, yyyy")}
                     </div>
                   </div>
                 </div>
@@ -183,10 +225,9 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
             {tasksWithoutDueDate.map((task) => (
               <Card key={task.id} className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className={`mt-1 h-3 w-3 flex-shrink-0 rounded-full ${getStatusColor(task.status)}`} />
                   <div className="flex-1 space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-medium">{task.title}</h3>
+                      <h3 className={`text-sm font-medium ${task.status === "done" ? "text-muted-foreground line-through" : ""}`}>{task.title}</h3>
                       <div className="flex items-center gap-1">
                         <EditTaskDialog task={task} onTaskUpdated={handleTaskUpdated} userId={userId}>
                           <Button variant="ghost" size="icon" className="h-7 w-7">
@@ -203,7 +244,7 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
                         </Button>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge className={`${getStatusColor(task.status, false)} text-xs`}>
                       {getStatusLabel(task.status)}
                     </Badge>
                   </div>

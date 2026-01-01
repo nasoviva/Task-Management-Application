@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CheckCircle2, User, LogOut, LayoutGrid, List, Calendar } from "lucide-react"
+import { Pencil, User, LogOut, LayoutGrid, List, Calendar } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
@@ -26,7 +26,13 @@ export function DashboardNav({ user }: DashboardNavProps) {
   const supabase = createClient()
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    console.log("[DashboardNav] Signing out user:", user.id)
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error("[DashboardNav] Error signing out:", error)
+      return
+    }
+    console.log("[DashboardNav] Sign out successful")
     router.push("/")
     router.refresh()
   }
@@ -42,7 +48,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <CheckCircle2 className="h-6 w-6 text-primary" />
+            <Pencil className="h-6 w-6 text-primary" />
             <span className="text-xl font-semibold">TaskFlow</span>
           </Link>
           <nav className="hidden items-center gap-1 md:flex">

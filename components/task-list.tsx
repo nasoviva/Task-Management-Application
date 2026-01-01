@@ -1,37 +1,28 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Trash2, Pencil, Calendar, Search, Filter, ArrowUpDown } from "lucide-react"
+import { Trash2, Pencil, Calendar, Search, Filter, ArrowUpDown, Plus } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { EditTaskDialog } from "@/components/edit-task-dialog"
-import { formatDistance } from "date-fns"
-
-interface Task {
-  id: string
-  title: string
-  description: string | null
-  status: "todo" | "in-progress" | "done"
-  due_date: string | null
-  start_date: string | null
-  end_date: string | null
-  created_at: string
-  updated_at: string
-  user_id: string
-}
+import { CreateTaskDialog } from "@/components/create-task-dialog"
+import { format } from "date-fns"
+import type { Task } from "@/lib/types/task"
+import { getStatusColor, getStatusLabel } from "@/lib/utils/task"
 
 interface TaskListProps {
   initialTasks: Task[]
   userId: string
+  onCreateTask?: (task: Task) => void
 }
 
-export function TaskList({ initialTasks, userId }: TaskListProps) {
+export function TaskList({ initialTasks, userId, onCreateTask }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
@@ -39,41 +30,58 @@ export function TaskList({ initialTasks, userId }: TaskListProps) {
   const supabase = createClient()
   const router = useRouter()
 
+  // Sync initialTasks with state when they change (e.g., after router.refresh())
+  useEffect(() => {
+    setTasks(initialTasks)
+  }, [initialTasks])
+
   const handleToggleComplete = async (taskId: string, currentStatus: string) => {
     const newStatus = currentStatus === "done" ? "todo" : "done"
+    console.log("[TaskList] Toggling task", taskId, "from", currentStatus, "to", newStatus)
 
     setTasks(tasks.map((task) => (task.id === taskId ? { ...task, status: newStatus } : task)))
 
     const { error } = await supabase.from("tasks").update({ status: newStatus }).eq("id", taskId).eq("user_id", userId)
 
     if (error) {
-      console.error("[v0] Error updating task:", error)
+      console.error("[TaskList] Error updating task:", error)
       setTasks(tasks.map((task) => (task.id === taskId ? { ...task, status: currentStatus } : task)))
       return
     }
 
+    console.log("[TaskList] Task status toggled successfully")
     router.refresh()
   }
 
   const handleDelete = async (taskId: string) => {
+    console.log("[TaskList] Deleting task:", taskId)
     const deletedTask = tasks.find((task) => task.id === taskId)
     setTasks(tasks.filter((task) => task.id !== taskId))
 
     const { error } = await supabase.from("tasks").delete().eq("id", taskId).eq("user_id", userId)
 
     if (error) {
-      console.error("[v0] Error deleting task:", error)
+      console.error("[TaskList] Error deleting task:", error)
       if (deletedTask) {
         setTasks([...tasks, deletedTask])
       }
       return
     }
 
+    console.log("[TaskList] Task deleted successfully")
     router.refresh()
   }
 
   const handleTaskUpdated = (updatedTask: Task) => {
     setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)))
+  }
+
+  const handleTaskCreated = (newTask: Task) => {
+    console.log("[TaskList] Adding new task to list:", newTask.id)
+    setTasks([newTask, ...tasks])
+    if (onCreateTask) {
+      onCreateTask(newTask)
+    }
   }
 
   const filteredAndSortedTasks = useMemo(() => {
@@ -123,46 +131,22 @@ export function TaskList({ initialTasks, userId }: TaskListProps) {
     return filtered
   }, [tasks, statusFilter, searchQuery, sortBy])
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "todo":
-        return "secondary"
-      case "in-progress":
-        return "default"
-      case "done":
-        return "outline"
-      default:
-        return "secondary"
-    }
-  }
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "todo":
-        return "To Do"
-      case "in-progress":
-        return "In Progress"
-      case "done":
-        return "Done"
-      default:
-        return status
-    }
-  }
 
   return (
     <div className="space-y-4">
-      <Card className="p-4">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search tasks..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <div className="flex gap-2">
+      <div className="flex items-center justify-between gap-4">
+        <Card className="flex-1 p-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <div className="flex gap-2">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[160px]">
                 <Filter className="mr-2 h-4 w-4" />
@@ -192,6 +176,13 @@ export function TaskList({ initialTasks, userId }: TaskListProps) {
           </div>
         </div>
       </Card>
+        <CreateTaskDialog onTaskCreated={handleTaskCreated}>
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Task
+          </Button>
+        </CreateTaskDialog>
+      </div>
 
       {filteredAndSortedTasks.length === 0 && tasks.length > 0 ? (
         <Card className="p-12 text-center">
@@ -244,13 +235,16 @@ export function TaskList({ initialTasks, userId }: TaskListProps) {
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant={getStatusColor(task.status)}>{getStatusLabel(task.status)}</Badge>
+                      <Badge className={getStatusColor(task.status)}>{getStatusLabel(task.status)}</Badge>
                       {task.due_date && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          Due {formatDistance(new Date(task.due_date), new Date(), { addSuffix: true })}
+                          Due: {format(new Date(task.due_date), "MMM d, yyyy")}
                         </div>
                       )}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Created: {format(new Date(task.created_at), "MMM d, yyyy")}
                     </div>
                   </div>
                 </div>

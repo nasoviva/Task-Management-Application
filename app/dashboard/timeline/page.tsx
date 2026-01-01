@@ -13,14 +13,17 @@ export default async function TimelinePage() {
     redirect("/auth/login")
   }
 
+  console.log("[TimelinePage] Fetching tasks for user:", user.id)
   const { data: tasks, error } = await supabase
     .from("tasks")
     .select("*")
     .eq("user_id", user.id)
-    .order("start_date", { ascending: true, nullsFirst: false })
+    .order("due_date", { ascending: true, nullsFirst: false })
 
   if (error) {
-    console.error("[v0] Error fetching tasks:", error)
+    console.error("[TimelinePage] Error fetching tasks:", error)
+  } else {
+    console.log("[TimelinePage] Fetched", tasks?.length || 0, "tasks")
   }
 
   return (

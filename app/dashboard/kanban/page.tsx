@@ -13,6 +13,7 @@ export default async function KanbanPage() {
     redirect("/auth/login")
   }
 
+  console.log("[KanbanPage] Fetching tasks for user:", user.id)
   const { data: tasks, error } = await supabase
     .from("tasks")
     .select("*")
@@ -20,7 +21,9 @@ export default async function KanbanPage() {
     .order("created_at", { ascending: false })
 
   if (error) {
-    console.error("[v0] Error fetching tasks:", error)
+    console.error("[KanbanPage] Error fetching tasks:", error)
+  } else {
+    console.log("[KanbanPage] Fetched", tasks?.length || 0, "tasks")
   }
 
   return (

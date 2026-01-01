@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { CheckCircle2, Calendar, LayoutGrid } from "lucide-react"
+import { Pencil, Calendar, LayoutGrid } from "lucide-react"
 import Link from "next/link"
 
 export default function HomePage() {
@@ -8,7 +8,7 @@ export default function HomePage() {
       <header className="border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-6 w-6 text-primary" />
+            <Pencil className="h-6 w-6 text-primary" />
             <span className="text-xl font-semibold">TaskFlow</span>
           </div>
           <div className="flex items-center gap-3">
@@ -45,7 +45,7 @@ export default function HomePage() {
             <div className="grid gap-8 md:grid-cols-3">
               <div className="flex flex-col items-center text-center">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                  <CheckCircle2 className="h-6 w-6 text-primary" />
+                  <Pencil className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="mb-2 text-xl font-semibold">Task Management</h3>
                 <p className="text-muted-foreground">Create, organize, and track your tasks with ease</p>

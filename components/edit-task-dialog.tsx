@@ -17,16 +17,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DatePicker } from "@/components/ui/date-picker"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-
-interface Task {
-  id: string
-  title: string
-  description: string | null
-  status: "todo" | "in-progress" | "done"
-  due_date: string | null
-}
+import type { Task } from "@/lib/types/task"
+import { convertDateToISO } from "@/lib/utils/task"
 
 interface EditTaskDialogProps {
   task: Task
@@ -38,41 +33,52 @@ interface EditTaskDialogProps {
 export function EditTaskDialog({ task, children, onTaskUpdated, userId }: EditTaskDialogProps) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [title, setTitle] = useState(task.title)
   const [description, setDescription] = useState(task.description || "")
   const [status, setStatus] = useState<"todo" | "in-progress" | "done">(task.status)
-  const [dueDate, setDueDate] = useState(task.due_date ? task.due_date.slice(0, 16) : "")
+  const [dueDate, setDueDate] = useState<Date | undefined>(task.due_date ? new Date(task.due_date) : undefined)
   const supabase = createClient()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("[EditTask] Starting task update for task:", task.id)
     setIsLoading(true)
+    setError(null)
 
     try {
+      console.log("[EditTask] Updating task with data:", { title, status, due_date: dueDate })
+      const dueDateValue = convertDateToISO(dueDate)
       const { data, error } = await supabase
         .from("tasks")
         .update({
           title,
           description: description || null,
           status,
-          due_date: dueDate || null,
+          due_date: dueDateValue,
         })
         .eq("id", task.id)
         .eq("user_id", userId)
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error("[EditTask] Error updating task:", error)
+        throw error
+      }
 
       if (data) {
+        console.log("[EditTask] Task updated successfully:", data.id)
         onTaskUpdated(data)
       }
 
       setOpen(false)
+      setError(null)
       router.refresh()
     } catch (error) {
-      console.error("[v0] Error updating task:", error)
+      console.error("[EditTask] Task update failed:", error)
+      setError(error instanceof Error ? error.message : "Failed to update task")
     } finally {
       setIsLoading(false)
     }
@@ -110,7 +116,7 @@ export function EditTaskDialog({ task, children, onTaskUpdated, userId }: EditTa
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-status">Status</Label>
-              <Select value={status} onValueChange={(value: any) => setStatus(value)}>
+              <Select value={status} onValueChange={(value: "todo" | "in-progress" | "done") => setStatus(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -123,13 +129,9 @@ export function EditTaskDialog({ task, children, onTaskUpdated, userId }: EditTa
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-due-date">Due Date</Label>
-              <Input
-                id="edit-due-date"
-                type="datetime-local"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-              />
+              <DatePicker value={dueDate} onChange={setDueDate} placeholder="Select due date" />
             </div>
+            {error && <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
