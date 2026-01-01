@@ -1,0 +1,35 @@
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
+import { KanbanBoard } from "@/components/kanban-board"
+
+export default async function KanbanPage() {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/auth/login")
+  }
+
+  const { data: tasks, error } = await supabase
+    .from("tasks")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    console.error("[v0] Error fetching tasks:", error)
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Kanban Board</h1>
+        <p className="text-muted-foreground">Visualize and manage your tasks with drag-and-drop</p>
+      </div>
+      <KanbanBoard initialTasks={tasks || []} userId={user.id} />
+    </div>
+  )
+}
