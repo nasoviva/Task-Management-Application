@@ -35,7 +35,7 @@ export function TaskList({ initialTasks, userId, onCreateTask }: TaskListProps) 
     setTasks(initialTasks)
   }, [initialTasks])
 
-  const handleToggleComplete = async (taskId: string, currentStatus: string) => {
+  const handleToggleComplete = async (taskId: string, currentStatus: "todo" | "in-progress" | "done") => {
     const newStatus = currentStatus === "done" ? "todo" : "done"
     console.log("[TaskList] Toggling task", taskId, "from", currentStatus, "to", newStatus)
 
