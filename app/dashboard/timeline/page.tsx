@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { TimelineView } from "@/components/timeline-view"
+import { texts } from "@/lib/constants/texts"
 
 export default async function TimelinePage() {
   const supabase = await createClient()
@@ -29,8 +30,8 @@ export default async function TimelinePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Timeline</h1>
-        <p className="text-muted-foreground">Visualize your tasks over time</p>
+        <h1 className="text-3xl font-bold">{texts.tasks.timelineTitle}</h1>
+        <p className="text-muted-foreground">{texts.tasks.timelineDescription}</p>
       </div>
       <TimelineView initialTasks={tasks || []} userId={user.id} />
     </div>

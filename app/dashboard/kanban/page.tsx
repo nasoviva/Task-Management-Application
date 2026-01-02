@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { KanbanBoard } from "@/components/kanban-board"
+import { texts } from "@/lib/constants/texts"
 
 export default async function KanbanPage() {
   const supabase = await createClient()
@@ -29,8 +30,8 @@ export default async function KanbanPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Kanban Board</h1>
-        <p className="text-muted-foreground">Visualize and manage your tasks with drag-and-drop</p>
+        <h1 className="text-3xl font-bold">{texts.tasks.kanbanTitle}</h1>
+        <p className="text-muted-foreground">{texts.tasks.kanbanDescription}</p>
       </div>
       <KanbanBoard initialTasks={tasks || []} userId={user.id} />
     </div>

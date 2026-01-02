@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { TaskList } from "@/components/task-list"
+import { texts } from "@/lib/constants/texts"
 
 export default async function TasksPage() {
   const supabase = await createClient()
@@ -25,8 +26,8 @@ export default async function TasksPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Tasks</h1>
-        <p className="text-muted-foreground">Manage and organize your tasks</p>
+        <h1 className="text-3xl font-bold">{texts.tasks.title}</h1>
+        <p className="text-muted-foreground">{texts.tasks.description}</p>
       </div>
       <TaskList initialTasks={tasks || []} userId={user.id} />
     </div>

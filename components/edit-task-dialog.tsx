@@ -22,6 +22,7 @@ import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import type { Task } from "@/lib/types/task"
 import { convertDateToISO } from "@/lib/utils/task"
+import { texts } from "@/lib/constants/texts"
 
 interface EditTaskDialogProps {
   task: Task
@@ -78,7 +79,7 @@ export function EditTaskDialog({ task, children, onTaskUpdated, userId }: EditTa
       router.refresh()
     } catch (error) {
       console.error("[EditTask] Task update failed:", error)
-      setError(error instanceof Error ? error.message : "Failed to update task")
+      setError(error instanceof Error ? error.message : texts.tasks.failedToUpdate)
     } finally {
       setIsLoading(false)
     }
@@ -90,55 +91,55 @@ export function EditTaskDialog({ task, children, onTaskUpdated, userId }: EditTa
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Edit task</DialogTitle>
-            <DialogDescription>Update the task details below.</DialogDescription>
+            <DialogTitle>{texts.dialogs.editTaskTitle}</DialogTitle>
+            <DialogDescription>{texts.dialogs.editTaskDescription}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="edit-title">Title</Label>
+              <Label htmlFor="edit-title">{texts.tasks.taskTitle}</Label>
               <Input
                 id="edit-title"
-                placeholder="Task title"
+                placeholder={texts.tasks.taskTitlePlaceholder}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-description">Description</Label>
+              <Label htmlFor="edit-description">{texts.tasks.taskDescription}</Label>
               <Textarea
                 id="edit-description"
-                placeholder="Task description (optional)"
+                placeholder={texts.tasks.taskDescriptionPlaceholder}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-status">Status</Label>
+              <Label htmlFor="edit-status">{texts.tasks.status}</Label>
               <Select value={status} onValueChange={(value: "todo" | "in-progress" | "done") => setStatus(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todo">To Do</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="done">Done</SelectItem>
+                  <SelectItem value="todo">{texts.tasks.toDo}</SelectItem>
+                  <SelectItem value="in-progress">{texts.tasks.inProgress}</SelectItem>
+                  <SelectItem value="done">{texts.tasks.done}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-due-date">Due Date</Label>
-              <DatePicker value={dueDate} onChange={setDueDate} placeholder="Select due date" />
+              <Label htmlFor="edit-due-date">{texts.tasks.dueDate}</Label>
+              <DatePicker value={dueDate} onChange={setDueDate} placeholder={texts.tasks.selectDueDate} />
             </div>
             {error && <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+              {texts.tasks.cancel}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save changes"}
+              {isLoading ? texts.tasks.saving : texts.tasks.saveChanges}
             </Button>
           </DialogFooter>
         </form>

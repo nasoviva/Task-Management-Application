@@ -23,6 +23,7 @@ import { usePathname, useRouter } from "next/navigation"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useState } from "react"
+import { texts } from "@/lib/constants/texts"
 
 interface DashboardNavProps {
   user: SupabaseUser
@@ -47,9 +48,9 @@ export function DashboardNav({ user }: DashboardNavProps) {
   }
 
   const navItems = [
-    { href: "/dashboard/tasks", label: "Tasks", icon: List },
-    { href: "/dashboard/kanban", label: "Kanban", icon: LayoutGrid },
-    { href: "/dashboard/timeline", label: "Timeline", icon: Calendar },
+    { href: "/dashboard/tasks", label: texts.nav.tasks, icon: List },
+    { href: "/dashboard/kanban", label: texts.nav.kanban, icon: LayoutGrid },
+    { href: "/dashboard/timeline", label: texts.nav.timeline, icon: Calendar },
   ]
 
   const handleNavClick = () => {
@@ -62,7 +63,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
         <div className="flex items-center gap-6">
           <Link href="/dashboard" className="flex items-center gap-2">
             <Pencil className="h-6 w-6 text-primary" />
-            <span className="text-xl font-semibold">TaskFlow</span>
+            <span className="text-xl font-semibold">{texts.appName}</span>
           </Link>
           {/* Desktop Navigation */}
           <nav className="hidden items-center gap-1 md:flex">
@@ -84,12 +85,12 @@ export function DashboardNav({ user }: DashboardNavProps) {
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
                 <Menu className="h-5 w-5" />
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{texts.nav.openMenu}</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px] sm:w-[400px]">
               <SheetHeader>
-                <SheetTitle>Navigation</SheetTitle>
+                <SheetTitle>{texts.nav.navigation}</SheetTitle>
               </SheetHeader>
               <nav className="mt-6 flex flex-col gap-2">
                 {navItems.map((item) => {
@@ -126,14 +127,14 @@ export function DashboardNav({ user }: DashboardNavProps) {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col gap-1">
-                  <p className="text-sm font-medium">Account</p>
+                  <p className="text-sm font-medium">{texts.nav.account}</p>
                   <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-destructive focus:text-destructive">
                 <LogOut className="h-4 w-4" />
-                Sign out
+                {texts.nav.signOut}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

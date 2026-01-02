@@ -14,6 +14,7 @@ import { CreateTaskDialog } from "@/components/create-task-dialog"
 import { format, startOfMonth, endOfMonth } from "date-fns"
 import type { Task } from "@/lib/types/task"
 import { getStatusColor, getStatusLabel } from "@/lib/utils/task"
+import { texts } from "@/lib/constants/texts"
 
 interface TimelineViewProps {
   initialTasks: Task[]
@@ -113,7 +114,7 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search tasks..."
+                placeholder={texts.tasks.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -123,15 +124,15 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[160px]">
                   <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Filter by status" />
+                  <SelectValue placeholder={texts.tasks.filterByStatus} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Tasks</SelectItem>
-                  <SelectItem value="todo">To Do</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="done">Done</SelectItem>
-                  <SelectItem value="complete">Complete</SelectItem>
-                  <SelectItem value="incomplete">Incomplete</SelectItem>
+                  <SelectItem value="all">{texts.tasks.allTasks}</SelectItem>
+                  <SelectItem value="todo">{texts.tasks.toDo}</SelectItem>
+                  <SelectItem value="in-progress">{texts.tasks.inProgress}</SelectItem>
+                  <SelectItem value="done">{texts.tasks.done}</SelectItem>
+                  <SelectItem value="complete">{texts.tasks.complete}</SelectItem>
+                  <SelectItem value="incomplete">{texts.tasks.incomplete}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -140,18 +141,18 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
         <CreateTaskDialog onTaskCreated={handleTaskCreated}>
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
-            New Task
+            {texts.tasks.newTask}
           </Button>
         </CreateTaskDialog>
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={previousMonth}>
-            Previous
+            {texts.tasks.previous}
           </Button>
           <h2 className="text-xl font-semibold">{format(currentMonth, "MMMM yyyy")}</h2>
           <Button variant="outline" onClick={nextMonth}>
-            Next
+            {texts.tasks.next}
           </Button>
         </div>
       </div>
@@ -192,7 +193,7 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
                       <Badge className={getStatusColor(task.status, false)}>{getStatusLabel(task.status)}</Badge>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        Due: {format(dueDate, "MMM d, yyyy")}
+                        {texts.tasks.due} {format(dueDate, "MMM d, yyyy")}
                       </div>
                       {isOverdue && (
                         <Badge variant="destructive" className="text-xs">
@@ -201,7 +202,7 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Created: {format(createdDate, "MMM d, yyyy")}
+                      {texts.tasks.created} {format(createdDate, "MMM d, yyyy")}
                     </div>
                   </div>
                 </div>
@@ -212,15 +213,14 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
       ) : (
         <Card className="p-12 text-center">
           <p className="text-lg text-muted-foreground">
-            No tasks with due dates in {format(currentMonth, "MMMM yyyy")}. Add due dates to your tasks to see them on
-            the timeline!
+            {texts.tasks.noTasksWithDueDates.replace("{month}", format(currentMonth, "MMMM yyyy"))}
           </p>
         </Card>
       )}
 
       {tasksWithoutDueDate.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-muted-foreground">Tasks without due dates</h3>
+          <h3 className="text-lg font-semibold text-muted-foreground">{texts.tasks.tasksWithoutDueDates}</h3>
           <div className="grid gap-3 md:grid-cols-2">
             {tasksWithoutDueDate.map((task) => (
               <Card key={task.id} className="p-4">

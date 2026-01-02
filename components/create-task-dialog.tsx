@@ -22,6 +22,7 @@ import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import type { Task } from "@/lib/types/task"
 import { convertDateToISO } from "@/lib/utils/task"
+import { texts } from "@/lib/constants/texts"
 
 interface CreateTaskDialogProps {
   children: React.ReactNode
@@ -68,7 +69,7 @@ export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogPr
 
       if (!user) {
         console.error("[CreateTask] No user found")
-        setError("You must be logged in to create tasks")
+        setError(texts.auth.mustBeLoggedIn)
         setIsLoading(false)
         return
       }
@@ -101,7 +102,7 @@ export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogPr
       router.refresh()
     } catch (error) {
       console.error("[CreateTask] Task creation failed:", error)
-      setError(error instanceof Error ? error.message : "Failed to create task")
+      setError(error instanceof Error ? error.message : texts.tasks.failedToCreate)
     } finally {
       setIsLoading(false)
     }
@@ -113,55 +114,55 @@ export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogPr
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create new task</DialogTitle>
-            <DialogDescription>Add a new task to your list. Fill in the details below.</DialogDescription>
+            <DialogTitle>{texts.dialogs.createTaskTitle}</DialogTitle>
+            <DialogDescription>{texts.dialogs.createTaskDescription}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">{texts.tasks.taskTitle}</Label>
               <Input
                 id="title"
-                placeholder="Task title"
+                placeholder={texts.tasks.taskTitlePlaceholder}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{texts.tasks.taskDescription}</Label>
               <Textarea
                 id="description"
-                placeholder="Task description (optional)"
+                placeholder={texts.tasks.taskDescriptionPlaceholder}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{texts.tasks.status}</Label>
               <Select value={status} onValueChange={(value: "todo" | "in-progress" | "done") => setStatus(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todo">To Do</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="done">Done</SelectItem>
+                  <SelectItem value="todo">{texts.tasks.toDo}</SelectItem>
+                  <SelectItem value="in-progress">{texts.tasks.inProgress}</SelectItem>
+                  <SelectItem value="done">{texts.tasks.done}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="due-date">Due Date</Label>
-              <DatePicker value={dueDate} onChange={setDueDate} placeholder="Select due date" />
+              <Label htmlFor="due-date">{texts.tasks.dueDate}</Label>
+              <DatePicker value={dueDate} onChange={setDueDate} placeholder={texts.tasks.selectDueDate} />
             </div>
             {error && <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-              Cancel
+              {texts.tasks.cancel}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create task"}
+              {isLoading ? texts.tasks.creating : texts.tasks.createTask}
             </Button>
           </DialogFooter>
         </form>

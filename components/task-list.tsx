@@ -15,6 +15,7 @@ import { CreateTaskDialog } from "@/components/create-task-dialog"
 import { format } from "date-fns"
 import type { Task } from "@/lib/types/task"
 import { getStatusColor, getStatusLabel } from "@/lib/utils/task"
+import { texts } from "@/lib/constants/texts"
 
 interface TaskListProps {
   initialTasks: Task[]
@@ -140,7 +141,7 @@ export function TaskList({ initialTasks, userId, onCreateTask }: TaskListProps) 
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search tasks..."
+                placeholder={texts.tasks.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -150,27 +151,27 @@ export function TaskList({ initialTasks, userId, onCreateTask }: TaskListProps) 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[160px]">
                 <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder={texts.tasks.filterByStatus} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tasks</SelectItem>
-                <SelectItem value="todo">To Do</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="done">Done</SelectItem>
-                <SelectItem value="complete">Complete</SelectItem>
-                <SelectItem value="incomplete">Incomplete</SelectItem>
+                <SelectItem value="all">{texts.tasks.allTasks}</SelectItem>
+                <SelectItem value="todo">{texts.tasks.toDo}</SelectItem>
+                <SelectItem value="in-progress">{texts.tasks.inProgress}</SelectItem>
+                <SelectItem value="done">{texts.tasks.done}</SelectItem>
+                <SelectItem value="complete">{texts.tasks.complete}</SelectItem>
+                <SelectItem value="incomplete">{texts.tasks.incomplete}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[180px]">
                 <ArrowUpDown className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder={texts.tasks.sortBy} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="created-desc">Newest First</SelectItem>
-                <SelectItem value="created-asc">Oldest First</SelectItem>
-                <SelectItem value="due-asc">Due Date (Earliest)</SelectItem>
-                <SelectItem value="due-desc">Due Date (Latest)</SelectItem>
+                <SelectItem value="created-desc">{texts.tasks.sortCreatedDesc}</SelectItem>
+                <SelectItem value="created-asc">{texts.tasks.sortCreatedAsc}</SelectItem>
+                <SelectItem value="due-asc">{texts.tasks.sortDueAsc}</SelectItem>
+                <SelectItem value="due-desc">{texts.tasks.sortDueDesc}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -179,7 +180,7 @@ export function TaskList({ initialTasks, userId, onCreateTask }: TaskListProps) 
         <CreateTaskDialog onTaskCreated={handleTaskCreated}>
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
-            New Task
+            {texts.tasks.newTask}
           </Button>
         </CreateTaskDialog>
       </div>
@@ -187,17 +188,17 @@ export function TaskList({ initialTasks, userId, onCreateTask }: TaskListProps) 
       {filteredAndSortedTasks.length === 0 && tasks.length > 0 ? (
         <Card className="p-12 text-center">
           <p className="text-lg text-muted-foreground">
-            No tasks match your filters. Try adjusting your search or filters.
+            {texts.tasks.noTasksMatch}
           </p>
         </Card>
       ) : filteredAndSortedTasks.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-lg text-muted-foreground">No tasks yet. Create your first task to get started!</p>
+          <p className="text-lg text-muted-foreground">{texts.tasks.noTasksYet}</p>
         </Card>
       ) : (
         <>
           <div className="text-sm text-muted-foreground">
-            Showing {filteredAndSortedTasks.length} of {tasks.length} tasks
+            {texts.tasks.showingTasks.replace("{count}", filteredAndSortedTasks.length.toString()).replace("{total}", tasks.length.toString())}
           </div>
           <div className="space-y-3">
             {filteredAndSortedTasks.map((task) => (
@@ -239,12 +240,12 @@ export function TaskList({ initialTasks, userId, onCreateTask }: TaskListProps) 
                       {task.due_date && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          Due: {format(new Date(task.due_date), "MMM d, yyyy")}
+                          {texts.tasks.due} {format(new Date(task.due_date), "MMM d, yyyy")}
                         </div>
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Created: {format(new Date(task.created_at), "MMM d, yyyy")}
+                      {texts.tasks.created} {format(new Date(task.created_at), "MMM d, yyyy")}
                     </div>
                   </div>
                 </div>

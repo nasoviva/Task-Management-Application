@@ -1,6 +1,7 @@
 {
-  "name": "my-v0-project",
+  "name": "taskflow",
   "version": "0.1.0",
+  "description": "A modern task management application built with Next.js 16 and Supabase, featuring authentication, Kanban boards, timeline views, and comprehensive task management capabilities.",
   "private": true,
   "scripts": {
     "build": "next build",

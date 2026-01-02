@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Footer } from "@/components/footer"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { texts } from "@/lib/constants/texts"
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("")
@@ -30,14 +31,14 @@ export default function SignUpPage() {
 
     if (password !== confirmPassword) {
       console.error("[SignUp] Password mismatch")
-      setError("Passwords do not match")
+      setError(texts.auth.passwordsDoNotMatch)
       setIsLoading(false)
       return
     }
 
     if (password.length < 6) {
       console.error("[SignUp] Password too short")
-      setError("Password must be at least 6 characters")
+      setError(texts.auth.passwordTooShort)
       setIsLoading(false)
       return
     }
@@ -58,7 +59,7 @@ export default function SignUpPage() {
       router.push("/auth/verify-email")
     } catch (error: unknown) {
       console.error("[SignUp] Signup failed:", error)
-      setError(error instanceof Error ? error.message : "An error occurred")
+      setError(error instanceof Error ? error.message : texts.auth.anErrorOccurred)
     } finally {
       setIsLoading(false)
     }
@@ -69,7 +70,7 @@ export default function SignUpPage() {
       <header className="border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl font-semibold">TaskFlow</span>
+            <span className="text-xl font-semibold">{texts.appName}</span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -80,40 +81,40 @@ export default function SignUpPage() {
         <div className="w-full max-w-sm">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Create an account</CardTitle>
-              <CardDescription>Get started with your task management</CardDescription>
+              <CardTitle className="text-2xl">{texts.auth.createAccount}</CardTitle>
+              <CardDescription>{texts.auth.signUpDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSignUp}>
                 <div className="flex flex-col gap-6">
                   <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{texts.auth.email}</Label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder={texts.auth.emailPlaceholder}
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{texts.auth.password}</Label>
                     <Input
                       id="password"
                       type="password"
-                      placeholder="At least 6 characters"
+                      placeholder={texts.auth.passwordPlaceholder}
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <Label htmlFor="confirm-password">{texts.auth.confirmPassword}</Label>
                     <Input
                       id="confirm-password"
                       type="password"
-                      placeholder="Re-enter your password"
+                      placeholder={texts.auth.confirmPasswordPlaceholder}
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
@@ -121,13 +122,13 @@ export default function SignUpPage() {
                   </div>
                   {error && <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Creating account..." : "Sign up"}
+                    {isLoading ? texts.auth.creatingAccount : texts.auth.signUp}
                   </Button>
                 </div>
                 <div className="mt-4 text-center text-sm text-muted-foreground">
-                  Already have an account?{" "}
+                  {texts.auth.alreadyHaveAccount}{" "}
                   <Link href="/auth/login" className="text-foreground underline underline-offset-4 hover:text-primary">
-                    Sign in
+                    {texts.auth.signIn}
                   </Link>
                 </div>
               </form>

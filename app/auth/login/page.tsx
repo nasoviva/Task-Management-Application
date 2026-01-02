@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Footer } from "@/components/footer"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { texts } from "@/lib/constants/texts"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -41,7 +42,7 @@ export default function LoginPage() {
       router.refresh()
     } catch (error: unknown) {
       console.error("[Login] Login failed:", error)
-      setError(error instanceof Error ? error.message : "An error occurred")
+      setError(error instanceof Error ? error.message : texts.auth.anErrorOccurred)
     } finally {
       setIsLoading(false)
     }
@@ -52,7 +53,7 @@ export default function LoginPage() {
       <header className="border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl font-semibold">TaskFlow</span>
+            <span className="text-xl font-semibold">{texts.appName}</span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -63,25 +64,25 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Welcome back</CardTitle>
-              <CardDescription>Sign in to your account to manage your tasks</CardDescription>
+              <CardTitle className="text-2xl">{texts.auth.welcomeBack}</CardTitle>
+              <CardDescription>{texts.auth.signInDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleLogin}>
                 <div className="flex flex-col gap-6">
                   <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{texts.auth.email}</Label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder={texts.auth.emailPlaceholder}
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{texts.auth.password}</Label>
                     <Input
                       id="password"
                       type="password"
@@ -92,13 +93,13 @@ export default function LoginPage() {
                   </div>
                   {error && <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Signing in..." : "Sign in"}
+                    {isLoading ? texts.auth.signingIn : texts.auth.signIn}
                   </Button>
                 </div>
                 <div className="mt-4 text-center text-sm text-muted-foreground">
-                  Don&apos;t have an account?{" "}
+                  {texts.auth.dontHaveAccount}{" "}
                   <Link href="/auth/sign-up" className="text-foreground underline underline-offset-4 hover:text-primary">
-                    Sign up
+                    {texts.auth.signUp}
                   </Link>
                 </div>
               </form>

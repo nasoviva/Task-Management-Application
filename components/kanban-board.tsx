@@ -16,6 +16,7 @@ import { CreateTaskDialog } from "@/components/create-task-dialog"
 import { format } from "date-fns"
 import type { Task } from "@/lib/types/task"
 import { getStatusColor, getStatusLabel } from "@/lib/utils/task"
+import { texts } from "@/lib/constants/texts"
 
 interface KanbanBoardProps {
   initialTasks: Task[]
@@ -137,7 +138,7 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search tasks..."
+                placeholder={texts.tasks.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -147,15 +148,15 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[160px]">
                   <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Filter by status" />
+                  <SelectValue placeholder={texts.tasks.filterByStatus} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Tasks</SelectItem>
-                  <SelectItem value="todo">To Do</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="done">Done</SelectItem>
-                  <SelectItem value="complete">Complete</SelectItem>
-                  <SelectItem value="incomplete">Incomplete</SelectItem>
+                  <SelectItem value="all">{texts.tasks.allTasks}</SelectItem>
+                  <SelectItem value="todo">{texts.tasks.toDo}</SelectItem>
+                  <SelectItem value="in-progress">{texts.tasks.inProgress}</SelectItem>
+                  <SelectItem value="done">{texts.tasks.done}</SelectItem>
+                  <SelectItem value="complete">{texts.tasks.complete}</SelectItem>
+                  <SelectItem value="incomplete">{texts.tasks.incomplete}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -164,7 +165,7 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
         <CreateTaskDialog onTaskCreated={handleTaskCreated}>
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
-            New Task
+            {texts.tasks.newTask}
           </Button>
         </CreateTaskDialog>
       </div>
@@ -217,12 +218,12 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
                         {task.due_date && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Calendar className="h-3 w-3" />
-                            Due: {format(new Date(task.due_date), "MMM d, yyyy")}
+                            {texts.tasks.due} {format(new Date(task.due_date), "MMM d, yyyy")}
                           </div>
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Created: {format(new Date(task.created_at), "MMM d, yyyy")}
+                        {texts.tasks.created} {format(new Date(task.created_at), "MMM d, yyyy")}
                       </div>
                     </div>
                   </Card>
