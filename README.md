@@ -157,10 +157,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - Create user guide/documentation
 - Multi-language support
 
-## License
-
-This project is created for assessment purposes.
-
 ## Contributing
 
 This is an assessment project. For questions or issues, please contact the repository owner.
