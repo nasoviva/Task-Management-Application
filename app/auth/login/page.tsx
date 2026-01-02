@@ -24,25 +24,62 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     console.log("[Login] Starting login process for email:", email)
-    const supabase = createClient()
     setIsLoading(true)
     setError(null)
 
     try {
+      console.log("[Login] Creating Supabase client...")
+      const supabase = createClient()
+      console.log("[Login] Supabase client created successfully")
+
+      console.log("[Login] Attempting sign in...")
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
+      
       if (error) {
         console.error("[Login] Authentication error:", error)
-        throw error
+        console.error("[Login] Error details:", {
+          message: error.message,
+          status: error.status,
+          name: error.name,
+        })
+        
+        // Provide more user-friendly error messages
+        let errorMessage = error.message
+        if (error.message.includes("Invalid API key") || error.message.includes("API key")) {
+          errorMessage = "Configuration error: Invalid Supabase API key. Please check your environment variables."
+        } else if (error.message.includes("Invalid URL") || error.message.includes("URL")) {
+          errorMessage = "Configuration error: Invalid Supabase URL. Please check your environment variables."
+        } else if (error.message.includes("Invalid login credentials")) {
+          errorMessage = "Invalid email or password. Please check your credentials and try again."
+        }
+        
+        throw new Error(errorMessage)
       }
+      
       console.log("[Login] Login successful, user:", data.user?.id)
+      console.log("[Login] Session:", data.session ? "created" : "not created")
       router.push("/dashboard")
       router.refresh()
     } catch (error: unknown) {
       console.error("[Login] Login failed:", error)
-      setError(error instanceof Error ? error.message : texts.auth.anErrorOccurred)
+      
+      if (error instanceof Error) {
+        // Check if it's a configuration error from createClient
+        if (error.message.includes("Missing required environment variables")) {
+          setError(
+            "Configuration error: Supabase credentials are missing. " +
+            "Please create a .env.local file with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. " +
+            "See README.md for setup instructions."
+          )
+        } else {
+          setError(error.message)
+        }
+      } else {
+        setError(texts.auth.anErrorOccurred)
+      }
     } finally {
       setIsLoading(false)
     }

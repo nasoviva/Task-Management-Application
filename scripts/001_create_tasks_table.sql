@@ -27,12 +27,28 @@ CREATE POLICY "Users can insert their own tasks"
 CREATE POLICY "Users can update their own tasks"
   ON public.tasks
   FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own tasks"
   ON public.tasks
   FOR DELETE
   USING (auth.uid() = user_id);
+
+-- Create function to update updated_at timestamp
+CREATE OR REPLACE FUNCTION public.handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to automatically update updated_at on row update
+CREATE TRIGGER set_updated_at
+  BEFORE UPDATE ON public.tasks
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_updated_at();
 
 -- Create index for better query performance
 CREATE INDEX IF NOT EXISTS tasks_user_id_idx ON public.tasks(user_id);

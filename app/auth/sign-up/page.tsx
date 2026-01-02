@@ -25,7 +25,6 @@ export default function SignUpPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     console.log("[SignUp] Starting signup process for email:", email)
-    const supabase = createClient()
     setIsLoading(true)
     setError(null)
 
@@ -44,22 +43,60 @@ export default function SignUpPage() {
     }
 
     try {
+      console.log("[SignUp] Creating Supabase client...")
+      const supabase = createClient()
+      console.log("[SignUp] Supabase client created successfully")
+
+      const redirectUrl = process.env.NEXT_PUBLIC_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`
+      console.log("[SignUp] Attempting signup with redirect URL:", redirectUrl)
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
+          emailRedirectTo: redirectUrl,
         },
       })
+      
       if (error) {
         console.error("[SignUp] Signup error:", error)
-        throw error
+        console.error("[SignUp] Error details:", {
+          message: error.message,
+          status: error.status,
+          name: error.name,
+        })
+        
+        // Provide more user-friendly error messages
+        let errorMessage = error.message
+        if (error.message.includes("Invalid API key") || error.message.includes("API key")) {
+          errorMessage = "Configuration error: Invalid Supabase API key. Please check your environment variables."
+        } else if (error.message.includes("Invalid URL") || error.message.includes("URL")) {
+          errorMessage = "Configuration error: Invalid Supabase URL. Please check your environment variables."
+        }
+        
+        throw new Error(errorMessage)
       }
+      
       console.log("[SignUp] Signup successful, user:", data.user?.id)
+      console.log("[SignUp] Session:", data.session ? "created" : "not created (email verification required)")
       router.push("/auth/verify-email")
     } catch (error: unknown) {
       console.error("[SignUp] Signup failed:", error)
-      setError(error instanceof Error ? error.message : texts.auth.anErrorOccurred)
+      
+      if (error instanceof Error) {
+        // Check if it's a configuration error from createClient
+        if (error.message.includes("Missing required environment variables")) {
+          setError(
+            "Configuration error: Supabase credentials are missing. " +
+            "Please create a .env.local file with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. " +
+            "See README.md for setup instructions."
+          )
+        } else {
+          setError(error.message)
+        }
+      } else {
+        setError(texts.auth.anErrorOccurred)
+      }
     } finally {
       setIsLoading(false)
     }
