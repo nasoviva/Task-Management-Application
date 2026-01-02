@@ -1,10 +1,22 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mail } from "lucide-react"
 import Link from "next/link"
+import { Footer } from "@/components/footer"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function VerifyEmailPage() {
   return (
     <div className="flex min-h-screen flex-col">
+      <header className="border-b">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-xl font-semibold">TaskFlow</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
       <div className="flex flex-1 w-full items-center justify-center p-6">
         <div className="w-full max-w-md">
           <Card>
@@ -29,11 +41,7 @@ export default function VerifyEmailPage() {
           </Card>
         </div>
       </div>
-      <footer className="border-t py-6">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 TaskFlow. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

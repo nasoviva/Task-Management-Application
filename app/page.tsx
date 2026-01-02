@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { Pencil, Calendar, LayoutGrid } from "lucide-react"
 import Link from "next/link"
+import { Footer } from "@/components/footer"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function HomePage() {
   return (
@@ -12,6 +14,7 @@ export default function HomePage() {
             <span className="text-xl font-semibold">TaskFlow</span>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Button variant="ghost" asChild>
               <Link href="/auth/login">Sign in</Link>
             </Button>
@@ -69,11 +72,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="border-t py-6">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 TaskFlow. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
