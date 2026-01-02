@@ -115,6 +115,7 @@ export const texts = {
     selectDueDate: "Select due date",
     due: "Due:",
     created: "Created:",
+    updated: "Updated:",
     failedToCreate: "Failed to create task",
     failedToUpdate: "Failed to update task",
     failedToDelete: "Failed to delete task",

@@ -2,17 +2,16 @@
 
 import type React from "react"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Trash2, Pencil, Calendar, Search, Filter, Plus } from "lucide-react"
+import { Calendar } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { EditTaskDialog } from "@/components/edit-task-dialog"
-import { CreateTaskDialog } from "@/components/create-task-dialog"
+import { TaskFiltersBar } from "@/components/task-filters-bar"
+import { TaskActions } from "@/components/task-actions"
+import { useTaskFilters } from "@/lib/hooks/use-task-filters"
+import { useTaskActions } from "@/lib/hooks/use-task-actions"
 import { format } from "date-fns"
 import type { Task } from "@/lib/types/task"
 import { getStatusColor, getStatusLabel } from "@/lib/utils/task"
@@ -24,51 +23,24 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [draggedTask, setDraggedTask] = useState<Task | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const supabase = createClient()
   const router = useRouter()
 
-  // Sync initialTasks with state when they change (e.g., after router.refresh())
-  useEffect(() => {
-    setTasks(initialTasks)
-  }, [initialTasks])
+  const { tasks, setTasks, handleDelete, handleTaskUpdated, handleTaskCreated } = useTaskActions({
+    initialTasks,
+    userId,
+  })
+
+  const filteredTasks = useTaskFilters(tasks, statusFilter, searchQuery)
 
   const columns: { status: "todo" | "in-progress" | "done"; title: string }[] = [
     { status: "todo", title: "To Do" },
     { status: "in-progress", title: "In Progress" },
     { status: "done", title: "Done" },
   ]
-
-
-  const filteredTasks = useMemo(() => {
-    let filtered = [...tasks]
-
-    // Filter by status
-    if (statusFilter !== "all") {
-      if (statusFilter === "complete") {
-        filtered = filtered.filter((task) => task.status === "done")
-      } else if (statusFilter === "incomplete") {
-        filtered = filtered.filter((task) => task.status !== "done")
-      } else {
-        filtered = filtered.filter((task) => task.status === statusFilter)
-      }
-    }
-
-    // Search by title or description
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(
-        (task) =>
-          task.title.toLowerCase().includes(query) ||
-          (task.description && task.description.toLowerCase().includes(query)),
-      )
-    }
-
-    return filtered
-  }, [tasks, statusFilter, searchQuery])
 
   const getTasksByStatus = (status: "todo" | "in-progress" | "done") => {
     return filteredTasks.filter((task) => task.status === status)
@@ -102,73 +74,21 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
     }
 
     console.log("[Kanban] Task status updated successfully")
-    setTasks(tasks.map((task) => (task.id === draggedTask.id ? { ...task, status: newStatus } : task)))
+    setTasks((prevTasks) => prevTasks.map((task) => (task.id === draggedTask.id ? { ...task, status: newStatus } : task)))
     setDraggedTask(null)
     router.refresh()
   }
 
-  const handleDelete = async (taskId: string) => {
-    console.log("[Kanban] Deleting task:", taskId)
-    const { error } = await supabase.from("tasks").delete().eq("id", taskId).eq("user_id", userId)
-
-    if (error) {
-      console.error("[Kanban] Error deleting task:", error)
-      return
-    }
-
-    console.log("[Kanban] Task deleted successfully")
-    setTasks(tasks.filter((task) => task.id !== taskId))
-    router.refresh()
-  }
-
-  const handleTaskUpdated = (updatedTask: Task) => {
-    setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)))
-  }
-
-  const handleTaskCreated = (newTask: Task) => {
-    console.log("[Kanban] Adding new task to board:", newTask.id)
-    setTasks([...tasks, newTask])
-  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <Card className="flex-1 p-4">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder={texts.tasks.searchPlaceholder}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[160px]">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder={texts.tasks.filterByStatus} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{texts.tasks.allTasks}</SelectItem>
-                  <SelectItem value="todo">{texts.tasks.toDo}</SelectItem>
-                  <SelectItem value="in-progress">{texts.tasks.inProgress}</SelectItem>
-                  <SelectItem value="done">{texts.tasks.done}</SelectItem>
-                  <SelectItem value="complete">{texts.tasks.complete}</SelectItem>
-                  <SelectItem value="incomplete">{texts.tasks.incomplete}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </Card>
-        <CreateTaskDialog onTaskCreated={handleTaskCreated}>
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            {texts.tasks.newTask}
-          </Button>
-        </CreateTaskDialog>
-      </div>
+      <TaskFiltersBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        onTaskCreated={(task) => handleTaskCreated(task, false)}
+      />
       <div className="grid gap-6 md:grid-cols-3">
       {columns.map((column) => {
         const columnTasks = getTasksByStatus(column.status)
@@ -194,21 +114,13 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <h3 className={`font-medium leading-tight ${task.status === "done" ? "text-muted-foreground line-through" : ""}`}>{task.title}</h3>
-                        <div className="flex items-center gap-1">
-                          <EditTaskDialog task={task} onTaskUpdated={handleTaskUpdated} userId={userId}>
-                            <Button variant="ghost" size="icon" className="h-7 w-7">
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                          </EditTaskDialog>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive"
-                            onClick={() => handleDelete(task.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
+                        <TaskActions
+                          task={task}
+                          userId={userId}
+                          onTaskUpdated={handleTaskUpdated}
+                          onDelete={handleDelete}
+                          size="small"
+                        />
                       </div>
                       {task.description && (
                         <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
