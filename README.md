@@ -187,6 +187,7 @@ Task-Management-Application/
 - Rich text editor for task descriptions
 - Offline support with service workers
 - Create user guide/documentation
+- Multi-language support
 
 ## License
 
