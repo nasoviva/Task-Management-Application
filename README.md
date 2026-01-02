@@ -2,6 +2,8 @@
 
 A modern task management application built with Next.js 16 and Supabase, featuring authentication, Kanban boards, timeline views, and comprehensive task management capabilities.
 
+🌐 **Live Demo**: [https://task-management-application-nasoviva.vercel.app](https://task-management-application-nasoviva.vercel.app)
+
 ## Features
 
 ### Core Features
