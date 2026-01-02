@@ -137,6 +137,14 @@ export const texts = {
     copyright: "© 2026 TaskFlow. All rights reserved.",
   },
 
+  // 404 Not Found
+  notFound: {
+    title: "Page Not Found",
+    description: "The page you're looking for doesn't exist or has been moved.",
+    goHome: "Go Home",
+    goBack: "Go Back",
+  },
+
   // Theme
   theme: {
     toggle: "Toggle theme",

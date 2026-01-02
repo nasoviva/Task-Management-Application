@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { Pencil } from "lucide-react"
 import { Footer } from "@/components/footer"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { texts } from "@/lib/constants/texts"
@@ -107,6 +108,7 @@ export default function SignUpPage() {
       <header className="border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
+            <Pencil className="h-6 w-6 text-primary" />
             <span className="text-xl font-semibold">{texts.appName}</span>
           </Link>
           <div className="flex items-center gap-2">
