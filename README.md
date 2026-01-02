@@ -111,38 +111,6 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Troubleshooting
-
-**Problem: "Your project's URL and Key are required to create a Supabase client!"**
-- Solution: Make sure you've created `.env.local` file with correct Supabase credentials (see step 4)
-
-**Problem: "relation 'tasks' does not exist"**
-- Solution: Make sure you've run the SQL script from step 5 to create the tasks table
-
-**Problem: Can't sign up or login**
-- Solution: Check that RLS policies were created correctly in step 5, and verify your Supabase project is active
-
-## Project Structure
-
-```
-Task-Management-Application/
-├── app/                    # Next.js App Router pages
-│   ├── auth/              # Authentication pages
-│   └── dashboard/         # Dashboard pages
-├── components/            # React components
-│   ├── ui/                # shadcn/ui components
-│   └── ...                # Feature components
-├── lib/                   # Utilities and configurations
-│   ├── supabase/          # Supabase client setup
-│   ├── database.types.ts # Database type definitions
-│   ├── types/             # Shared TypeScript types
-│   └── utils/             # Utility functions
-│       └── task.ts        # Task-related utilities
-├── scripts/               # SQL migration scripts
-│   └── 001_create_tasks_table.sql  # Database setup script
-└── public/                # Static assets
-```
-
 ## Design Decisions & Trade-offs
 
 ### 1. **Type Safety with Database Types**
