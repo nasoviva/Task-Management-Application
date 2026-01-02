@@ -111,36 +111,29 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Design Decisions & Trade-offs
+## Design Decisions
 
-### 1. **Type Safety with Database Types**
-- Created a centralized `database.types.ts` file to ensure type consistency across the application
-- All components use the same `Task` type from `lib/types/task.ts` to prevent type mismatches
-- **Trade-off**: Requires manual updates when database schema changes, but ensures compile-time safety
+This section explains the key technical decisions made during development and why they were chosen.
 
-### 2. **Row Level Security (RLS)**
-- Implemented RLS policies in Supabase to ensure users can only access their own tasks
-- All database queries are filtered by `user_id` on both client and server side for defense in depth
-- **Trade-off**: Slightly more complex queries, but significantly improves security
+### 1. **TypeScript and Centralized Types**
+- **Decision**: All data types are defined in `database.types.ts` and shared across the application
+- **Why**: Prevents type errors and ensures consistency - if you use wrong data type, you'll see error immediately
 
-### 3. **Server and Client Components**
-- Used Next.js Server Components for data fetching (pages) and Client Components for interactivity
-- **Trade-off**: More complex component structure, but better performance and SEO
+### 2. **Security: Row Level Security (RLS)**
+- **Decision**: Database-level security policies ensure users can only see their own tasks
+- **Why**: Even if there's a bug in application code, database won't allow accessing other users' data
 
-### 4. **Timeline View Implementation**
-- Timeline view uses `due_date` instead of separate `start_date` and `end_date` fields
-- Simplified the data model while still providing timeline functionality
-- **Trade-off**: Less granular timeline control, but simpler and more intuitive for users
+### 3. **Next.js Server and Client Components**
+- **Decision**: Pages fetch data on server (Server Components), interactive parts run on client (Client Components)
+- **Why**: Faster loading for users, better SEO, but still allows interactivity where needed
 
 ### 5. **Optimistic UI Updates**
-- Implemented optimistic updates in task list for better UX (immediate feedback)
-- Rollback on error to maintain data consistency
-- **Trade-off**: More complex state management, but significantly better user experience
+- **Decision**: UI updates immediately when user deletes or changes task, before server responds
+- **Why**: Feels instant and responsive - user sees changes right away
 
-### 6. **Code Reusability and DRY Principles**
-- Created utility functions in `lib/utils/task.ts` to eliminate code duplication
-- Shared functions for status colors, labels, and date conversion across components
-- **Trade-off**: Slightly more abstraction, but significantly reduces maintenance burden and ensures consistency
+### 6. **Code Reusability**
+- **Decision**: Created shared components (`TaskFiltersBar`, `TaskActions`, `AuthHeader`) and hooks (`useTaskActions`, `useTaskFilters`)
+- **Why**: Same code used in multiple places - if we need to change something, change it once
 
 ## What Would I Improve with More Time?
 

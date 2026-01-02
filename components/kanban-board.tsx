@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "lucide-react"
@@ -24,6 +24,9 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
   const [draggedTask, setDraggedTask] = useState<Task | null>(null)
+  const [touchDraggedTask, setTouchDraggedTask] = useState<Task | null>(null)
+  const [touchStartPos, setTouchStartPos] = useState<{ x: number; y: number } | null>(null)
+  const [draggedElement, setDraggedElement] = useState<HTMLElement | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const supabase = createClient()
@@ -36,6 +39,120 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
 
   const filteredTasks = useTaskFilters(tasks, statusFilter, searchQuery)
 
+  const handleDrop = useCallback(async (newStatus: "todo" | "in-progress" | "done") => {
+    const taskToMove = draggedTask || touchDraggedTask
+    if (!taskToMove || taskToMove.status === newStatus) {
+      console.log("[Kanban] Drop cancelled - no task or same status")
+      setDraggedTask(null)
+      setTouchDraggedTask(null)
+      setTouchStartPos(null)
+      setDraggedElement(null)
+      return
+    }
+
+    console.log("[Kanban] Moving task", taskToMove.id, "from", taskToMove.status, "to", newStatus)
+    const oldStatus = taskToMove.status
+    
+    // Optimistic update - update UI immediately
+    setTasks((prevTasks) => prevTasks.map((task) => (task.id === taskToMove.id ? { ...task, status: newStatus } : task)))
+    setDraggedTask(null)
+    setTouchDraggedTask(null)
+    setTouchStartPos(null)
+    setDraggedElement(null)
+
+    // Update in database
+    const { error } = await supabase
+      .from("tasks")
+      .update({ status: newStatus })
+      .eq("id", taskToMove.id)
+      .eq("user_id", userId)
+
+    if (error) {
+      console.error("[Kanban] Error updating task status:", error)
+      // Rollback on error
+      setTasks((prevTasks) => prevTasks.map((task) => (task.id === taskToMove.id ? { ...task, status: oldStatus } : task)))
+      return
+    }
+
+    console.log("[Kanban] Task status updated successfully")
+    router.refresh()
+  }, [draggedTask, touchDraggedTask, setTasks, supabase, userId, router])
+
+  // Global touch event handlers for mobile drag and drop
+  useEffect(() => {
+    if (!touchDraggedTask || !draggedElement) return
+
+    const handleGlobalTouchMove = (e: TouchEvent) => {
+      if (!touchDraggedTask || !touchStartPos || !draggedElement) return
+      
+      e.preventDefault()
+      const touch = e.touches[0]
+      
+      // Move the element visually
+      const deltaX = touch.clientX - touchStartPos.x
+      const deltaY = touch.clientY - touchStartPos.y
+      draggedElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`
+      draggedElement.style.zIndex = "1000"
+      draggedElement.style.position = "relative"
+      
+      // Find which column we're over
+      const dropZones = document.elementsFromPoint(touch.clientX, touch.clientY)
+      const dropZone = dropZones.find((el) => el.getAttribute("data-drop-zone")) as HTMLElement | undefined
+      
+      // Remove highlight from all drop zones first
+      document.querySelectorAll("[data-drop-zone]").forEach((zone) => {
+        const htmlZone = zone as HTMLElement
+        htmlZone.classList.remove("border-primary", "bg-primary/10")
+      })
+      
+      if (dropZone) {
+        dropZone.classList.add("border-primary", "bg-primary/10")
+      }
+    }
+
+    const handleGlobalTouchEnd = (e: TouchEvent) => {
+      if (!touchDraggedTask || !touchStartPos) return
+      
+      const touch = e.changedTouches[0]
+      const element = draggedElement
+      
+      // Reset element style
+      if (element) {
+        element.style.transform = ""
+        element.style.opacity = ""
+        element.style.zIndex = ""
+        element.style.position = ""
+      }
+      
+      // Find which column we're over
+      const dropZones = document.elementsFromPoint(touch.clientX, touch.clientY)
+      const dropZone = dropZones.find((el) => el.getAttribute("data-drop-zone")) as HTMLElement | undefined
+      
+      // Remove highlight from all drop zones
+      document.querySelectorAll("[data-drop-zone]").forEach((zone) => {
+        const htmlZone = zone as HTMLElement
+        htmlZone.classList.remove("border-primary", "bg-primary/10")
+      })
+      
+      if (dropZone) {
+        const newStatus = dropZone.getAttribute("data-drop-zone") as "todo" | "in-progress" | "done"
+        handleDrop(newStatus)
+      } else {
+        setTouchDraggedTask(null)
+        setTouchStartPos(null)
+        setDraggedElement(null)
+      }
+    }
+
+    document.addEventListener("touchmove", handleGlobalTouchMove, { passive: false })
+    document.addEventListener("touchend", handleGlobalTouchEnd)
+
+    return () => {
+      document.removeEventListener("touchmove", handleGlobalTouchMove)
+      document.removeEventListener("touchend", handleGlobalTouchEnd)
+    }
+  }, [touchDraggedTask, touchStartPos, draggedElement, handleDrop])
+
   const columns: { status: "todo" | "in-progress" | "done"; title: string }[] = [
     { status: "todo", title: "To Do" },
     { status: "in-progress", title: "In Progress" },
@@ -47,6 +164,7 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
   }
 
   const handleDragStart = (task: Task) => {
+    console.log("[Kanban] Drag start:", task.id)
     setDraggedTask(task)
   }
 
@@ -54,29 +172,82 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
     e.preventDefault()
   }
 
-  const handleDrop = async (newStatus: "todo" | "in-progress" | "done") => {
-    if (!draggedTask || draggedTask.status === newStatus) {
-      console.log("[Kanban] Drop cancelled - no task or same status")
-      setDraggedTask(null)
+  // Touch event handlers for mobile devices
+  const handleTouchStart = (e: React.TouchEvent, task: Task) => {
+    console.log("[Kanban] Touch start:", task.id)
+    const touch = e.touches[0]
+    const element = e.currentTarget as HTMLElement
+    setTouchDraggedTask(task)
+    setTouchStartPos({ x: touch.clientX, y: touch.clientY })
+    setDraggedElement(element)
+    element.style.opacity = "0.5"
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchDraggedTask || !touchStartPos || !draggedElement) return
+    
+    e.preventDefault()
+    const touch = e.touches[0]
+    
+    // Move the element visually
+    const deltaX = touch.clientX - touchStartPos.x
+    const deltaY = touch.clientY - touchStartPos.y
+    draggedElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`
+    draggedElement.style.zIndex = "1000"
+    draggedElement.style.position = "relative"
+    
+    // Find which column we're over
+    const dropZones = document.elementsFromPoint(touch.clientX, touch.clientY)
+    const dropZone = dropZones.find((el) => el.getAttribute("data-drop-zone")) as HTMLElement | undefined
+    
+    // Remove highlight from all drop zones first
+    document.querySelectorAll("[data-drop-zone]").forEach((zone) => {
+      const htmlZone = zone as HTMLElement
+      htmlZone.classList.remove("border-primary", "bg-primary/10")
+    })
+    
+    if (dropZone) {
+      dropZone.classList.add("border-primary", "bg-primary/10")
+    }
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchDraggedTask || !touchStartPos) {
+      setTouchDraggedTask(null)
+      setTouchStartPos(null)
+      setDraggedElement(null)
       return
     }
-
-    console.log("[Kanban] Moving task", draggedTask.id, "from", draggedTask.status, "to", newStatus)
-    const { error } = await supabase
-      .from("tasks")
-      .update({ status: newStatus })
-      .eq("id", draggedTask.id)
-      .eq("user_id", userId)
-
-    if (error) {
-      console.error("[Kanban] Error updating task status:", error)
-      return
+    
+    const touch = e.changedTouches[0]
+    const element = draggedElement
+    
+    // Reset element style
+    if (element) {
+      element.style.transform = ""
+      element.style.opacity = ""
+      element.style.zIndex = ""
+      element.style.position = ""
     }
-
-    console.log("[Kanban] Task status updated successfully")
-    setTasks((prevTasks) => prevTasks.map((task) => (task.id === draggedTask.id ? { ...task, status: newStatus } : task)))
-    setDraggedTask(null)
-    router.refresh()
+    
+    // Find which column we're over
+    const dropZones = document.elementsFromPoint(touch.clientX, touch.clientY)
+    const dropZone = dropZones.find((el) => el.getAttribute("data-drop-zone")) as HTMLElement | undefined
+    
+    // Remove highlight from all drop zones
+    document.querySelectorAll("[data-drop-zone]").forEach((zone) => {
+      const htmlZone = zone as HTMLElement
+      htmlZone.classList.remove("border-primary", "bg-primary/10")
+    })
+    
+    if (dropZone) {
+      const newStatus = dropZone.getAttribute("data-drop-zone") as "todo" | "in-progress" | "done"
+      handleDrop(newStatus)
+    } else {
+      setTouchDraggedTask(null)
+      setTouchStartPos(null)
+      setDraggedElement(null)
+    }
   }
 
 
@@ -102,14 +273,23 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
               className="min-h-[500px] rounded-lg border-2 border-dashed bg-muted/20 p-4 transition-colors hover:border-muted-foreground/50"
               onDragOver={handleDragOver}
               onDrop={() => handleDrop(column.status)}
+              data-drop-zone={column.status}
             >
               <div className="space-y-3">
                 {columnTasks.map((task) => (
                   <Card
                     key={task.id}
-                    className="cursor-move p-4 transition-shadow hover:shadow-md"
+                    className="cursor-move p-4 transition-shadow hover:shadow-md select-none"
                     draggable
                     onDragStart={() => handleDragStart(task)}
+                    onTouchStart={(e) => {
+                      // Only start drag if not clicking on action buttons
+                      const target = e.target as HTMLElement
+                      if (target.closest("button") || target.closest("a")) {
+                        return
+                      }
+                      handleTouchStart(e, task)
+                    }}
                   >
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-2">

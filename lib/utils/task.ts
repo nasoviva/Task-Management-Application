@@ -12,13 +12,13 @@ export function getStatusColor(status: string, includeTextColor: boolean = true)
   const textColor = includeTextColor ? " text-white" : ""
   switch (status) {
     case "todo":
-      return `bg-blue-500${textColor}`
+      return `bg-blue-600${textColor} hover:bg-blue-700`
     case "in-progress":
-      return `bg-amber-500${textColor}`
+      return `bg-amber-500${textColor} hover:bg-amber-600`
     case "done":
-      return `bg-green-500${textColor}`
+      return `bg-green-600${textColor} hover:bg-green-700`
     default:
-      return `bg-gray-500${textColor}`
+      return `bg-gray-600${textColor} hover:bg-gray-700`
   }
 }
 

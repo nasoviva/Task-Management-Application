@@ -20,16 +20,26 @@ export function useTaskActions({ initialTasks, userId }: UseTaskActionsProps) {
 
   const handleDelete = async (taskId: string) => {
     console.log("[TaskActions] Deleting task:", taskId)
-    const deletedTask = tasks.find((task) => task.id === taskId)
-    setTasks(tasks.filter((task) => task.id !== taskId))
+    
+    // Save current state for rollback
+    const currentTasks = tasks
+    const deletedTask = currentTasks.find((task) => task.id === taskId)
+    
+    if (!deletedTask) {
+      console.error("[TaskActions] Task not found for deletion")
+      return
+    }
 
+    // Optimistic update - remove from UI immediately
+    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId))
+
+    // Delete from database
     const { error } = await supabase.from("tasks").delete().eq("id", taskId).eq("user_id", userId)
 
     if (error) {
       console.error("[TaskActions] Error deleting task:", error)
-      if (deletedTask) {
-        setTasks([...tasks, deletedTask])
-      }
+      // Rollback on error - restore the task to its original position
+      setTasks(currentTasks)
       return
     }
 
@@ -52,11 +62,20 @@ export function useTaskActions({ initialTasks, userId }: UseTaskActionsProps) {
 
   const handleStatusUpdate = async (taskId: string, newStatus: "todo" | "in-progress" | "done") => {
     console.log("[TaskActions] Updating task status:", taskId, "to", newStatus)
-    // Optimistic update
+    const task = tasks.find((t) => t.id === taskId)
+    const oldStatus = task?.status
+
+    if (!task || !oldStatus) {
+      console.error("[TaskActions] Task not found for status update")
+      return
+    }
+
+    // Optimistic update - update UI immediately
     setTasks((prevTasks) =>
-      prevTasks.map((task) => (task.id === taskId ? { ...task, status: newStatus } : task))
+      prevTasks.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
     )
 
+    // Update in database
     const { error } = await supabase
       .from("tasks")
       .update({ status: newStatus })
@@ -65,8 +84,10 @@ export function useTaskActions({ initialTasks, userId }: UseTaskActionsProps) {
 
     if (error) {
       console.error("[TaskActions] Error updating task status:", error)
-      // Revert on error - will be synced by router.refresh()
-      router.refresh()
+      // Rollback on error
+      setTasks((prevTasks) =>
+        prevTasks.map((t) => (t.id === taskId ? { ...t, status: oldStatus } : t))
+      )
       return
     }
 
