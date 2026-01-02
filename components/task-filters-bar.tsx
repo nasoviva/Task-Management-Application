@@ -29,10 +29,10 @@ export function TaskFiltersBar({
   onSortChange,
 }: TaskFiltersBarProps) {
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <Card className="flex-1 p-4">
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder={texts.tasks.searchPlaceholder}
@@ -41,9 +41,9 @@ export function TaskFiltersBar({
               className="pl-9"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-full sm:w-[140px] md:w-[160px]">
                 <Filter className="mr-2 h-4 w-4" />
                 <SelectValue placeholder={texts.tasks.filterByStatus} />
               </SelectTrigger>
@@ -58,7 +58,7 @@ export function TaskFiltersBar({
             </Select>
             {sortBy !== undefined && onSortChange && (
               <Select value={sortBy} onValueChange={onSortChange}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[140px] md:w-[180px]">
                   <ArrowUpDown className="mr-2 h-4 w-4" />
                   <SelectValue placeholder={texts.tasks.sortBy} />
                 </SelectTrigger>
@@ -74,9 +74,10 @@ export function TaskFiltersBar({
         </div>
       </Card>
       <CreateTaskDialog onTaskCreated={onTaskCreated}>
-        <Button className="gap-2">
+        <Button className="gap-2 w-full sm:w-auto">
           <Plus className="h-4 w-4" />
-          {texts.tasks.newTask}
+          <span className="hidden sm:inline">{texts.tasks.newTask}</span>
+          <span className="sm:hidden">New</span>
         </Button>
       </CreateTaskDialog>
     </div>
