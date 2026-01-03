@@ -52,7 +52,6 @@ export function TaskFiltersBar({
                 <SelectItem value="todo">{texts.tasks.toDo}</SelectItem>
                 <SelectItem value="in-progress">{texts.tasks.inProgress}</SelectItem>
                 <SelectItem value="done">{texts.tasks.done}</SelectItem>
-                <SelectItem value="complete">{texts.tasks.complete}</SelectItem>
                 <SelectItem value="incomplete">{texts.tasks.incomplete}</SelectItem>
               </SelectContent>
             </Select>

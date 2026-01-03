@@ -7,9 +7,7 @@ export function useTaskFilters(tasks: Task[], statusFilter: string, searchQuery:
 
     // Filter by status
     if (statusFilter !== "all") {
-      if (statusFilter === "complete") {
-        filtered = filtered.filter((task) => task.status === "done")
-      } else if (statusFilter === "incomplete") {
+      if (statusFilter === "incomplete") {
         filtered = filtered.filter((task) => task.status !== "done")
       } else {
         filtered = filtered.filter((task) => task.status === statusFilter)
