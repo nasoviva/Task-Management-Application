@@ -96,8 +96,8 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
 
     filteredTasks.forEach((task) => {
       const startDate = startOfDay(new Date(task.created_at))
-      // For tasks without due_date, use created_at + 1 month as end date
-      const endDate = task.due_date ? startOfDay(new Date(task.due_date)) : startOfDay(addMonths(new Date(task.created_at), 1))
+      // For tasks without due_date, use created_at as end date (same day)
+      const endDate = task.due_date ? startOfDay(new Date(task.due_date)) : startDate
 
       // Only show tasks that overlap with the timeline range
       // Task overlaps if: (startDate <= range.end && endDate >= range.start)
@@ -245,6 +245,51 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
     return bars.sort((a, b) => a.row - b.row)
   }, [filteredTasks, timelineRange, totalDays, weeks.length])
 
+  // Count unique tasks visible in the current timeline range
+  const visibleUniqueTasksCount = useMemo(() => {
+    const uniqueTaskIds = new Set<string>()
+    taskBars.forEach(bar => uniqueTaskIds.add(bar.task.id))
+    return uniqueTaskIds.size
+  }, [taskBars])
+
+  // Calculate dynamic height based on maximum number of task bars per week
+  const timelineHeightData = useMemo(() => {
+    const barHeight = 22 // Fixed height in pixels
+    const barSpacing = 2 // Spacing between bars
+    const dateAreaHeight = 28 // Height reserved for date display at top of cell
+    const weekHeaderHeight = 48 // Height of day of week headers
+    const baseWeekHeight = 100 // Base height per week row
+    
+    // Find maximum number of overlapping bars in any single day across all weeks
+    const dayBarsCount: Map<string, number> = new Map()
+    
+    taskBars.forEach((bar) => {
+      const weekIndex = Math.floor((bar.topPercent || 0) * weeks.length / 100)
+      const startDayOfWeek = Math.floor(bar.leftPercent / (100 / 7))
+      const endDayOfWeek = Math.floor((bar.leftPercent + bar.widthPercent) / (100 / 7))
+      
+      for (let day = startDayOfWeek; day <= endDayOfWeek; day++) {
+        const key = `${weekIndex}-${day}`
+        dayBarsCount.set(key, (dayBarsCount.get(key) || 0) + 1)
+      }
+    })
+    
+    const maxBarsPerDay = Math.max(...Array.from(dayBarsCount.values()), 1)
+    
+    // Calculate height needed for task bars in one week
+    const taskBarsHeight = dateAreaHeight + (maxBarsPerDay * (barHeight + barSpacing)) + 4
+    
+    // Use the larger of base height or task bars height
+    const calculatedWeekRowHeight = Math.max(baseWeekHeight, taskBarsHeight)
+    
+    return {
+      timelineHeight: weeks.length * calculatedWeekRowHeight + weekHeaderHeight,
+      weekRowHeight: calculatedWeekRowHeight
+    }
+  }, [taskBars, weeks.length])
+
+  const timelineHeight = timelineHeightData.timelineHeight
+  const weekRowHeight = timelineHeightData.weekRowHeight
 
   const previousMonth = () => {
     setCurrentMonth(subMonths(currentMonth, 1))
@@ -307,48 +352,43 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
           <Button variant="outline" size="icon" onClick={nextMonth}>
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <Button variant="outline" onClick={goToToday} className="ml-4">
-            Today
-          </Button>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {new Set(taskBars.map(bar => bar.task.id)).size} of {filteredTasks.length} tasks visible
-        </div>
+        <Button variant="outline" onClick={goToToday}>
+          {texts.tasks.today}
+        </Button>
       </div>
 
       {filteredTasks.length > 0 ? (
         <Card className="overflow-hidden p-4">
           <div className="overflow-x-auto">
-            <div className="relative" style={{ width: "100%", minWidth: "800px", height: `${weeks.length * 100 + 48}px`, overflow: "visible" }}>
+            <div className="relative" style={{ width: "100%", minWidth: "max-content", height: `${timelineHeight}px`, overflow: "visible" }}>
               {/* Day of week headers (top) - horizontal */}
-              <div className="absolute top-0 left-0 right-0 h-12 border-b bg-muted/50">
-                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((dayName, dayIndex) => (
+              <div className="absolute top-0 left-0 right-0 h-12 border-b bg-muted/50" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(40px, 1fr))" }}>
+                {[
+                  texts.tasks.daysOfWeek.mon,
+                  texts.tasks.daysOfWeek.tue,
+                  texts.tasks.daysOfWeek.wed,
+                  texts.tasks.daysOfWeek.thu,
+                  texts.tasks.daysOfWeek.fri,
+                  texts.tasks.daysOfWeek.sat,
+                  texts.tasks.daysOfWeek.sun,
+                ].map((dayName) => (
                   <div
                     key={dayName}
-                    className="absolute border-r border-muted-foreground/40 last:border-r-0"
-                    style={{
-                      left: `${(dayIndex / 7) * 100}%`,
-                      width: `${(1 / 7) * 100}%`,
-                      height: "100%",
-                    }}
+                    className="border-r border-muted-foreground/40 last:border-r-0 flex items-center justify-center"
                   >
-                    <div className="h-full flex items-center justify-center">
-                      <div className="text-xs font-semibold text-muted-foreground">{dayName}</div>
-                    </div>
+                    <div className="text-xs font-semibold text-muted-foreground">{dayName}</div>
                   </div>
                 ))}
               </div>
 
               {/* Day cells grid - days as columns, weeks as rows (Google Calendar style) */}
-              <div className="absolute top-12 left-0 right-0" style={{ height: `${weeks.length * 100}px` }}>
-                {/* Day columns */}
+              <div className="absolute top-12 left-0 right-0" style={{ height: `${timelineHeight - 48}px`, display: "grid", gridTemplateColumns: "repeat(7, minmax(40px, 1fr))" }}>
                 {[0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => (
                   <div
                     key={dayOfWeek}
-                    className="absolute border-r border-muted-foreground/30 last:border-r-0"
+                    className="relative border-r border-muted-foreground/30 last:border-r-0"
                     style={{
-                      left: `${(dayOfWeek / 7) * 100}%`,
-                      width: `${(1 / 7) * 100}%`,
                       height: "100%",
                     }}
                   >
@@ -384,11 +424,11 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
               </div>
 
             {/* Task bars */}
-            <div className="absolute top-12 left-0 right-0" style={{ height: `${weeks.length * 100}px`, width: "100%", zIndex: 5 }}>
+            <div className="absolute top-12 left-0 right-0" style={{ height: `${timelineHeight - 48}px`, width: "100%", zIndex: 5, display: "grid", gridTemplateColumns: "repeat(7, minmax(40px, 1fr))" }}>
               {taskBars.length === 0 && filteredTasks.length > 0 && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <p className="text-sm text-muted-foreground">
-                    No tasks visible in this date range. Try navigating to different months.
+                    {texts.tasks.noTasksVisibleInRange}
                   </p>
                 </div>
               )}
@@ -397,10 +437,9 @@ export function TimelineView({ initialTasks, userId }: TimelineViewProps) {
                 const leftPercent = bar.leftPercent
                 const widthPercent = bar.widthPercent
                 
-                const weekRowHeightPx = 100 // Height of one week row in pixels
                 // Use topPercent from bar (already calculated for each week segment)
                 const weekIndex = Math.floor((bar.topPercent || 0) * weeks.length / 100)
-                const topOffsetPx = weekIndex * weekRowHeightPx
+                const topOffsetPx = weekIndex * weekRowHeight
                 
                 // Bar height: fixed (like Google Calendar) - one bar per week
                 const barHeight = 22 // Fixed height in pixels

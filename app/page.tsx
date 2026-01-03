@@ -17,7 +17,7 @@ export default function HomePage() {
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <Button variant="ghost" asChild>
-              <Link href="/auth/login">{texts.home.signIn}</Link>
+              <Link href="/auth/login">{texts.nav.signIn}</Link>
             </Button>
             <Button asChild>
               <Link href="/auth/sign-up">{texts.home.getStarted}</Link>
@@ -37,7 +37,7 @@ export default function HomePage() {
               <Link href="/auth/sign-up">{texts.home.startForFree}</Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link href="/auth/login">{texts.home.signIn}</Link>
+              <Link href="/auth/login">{texts.nav.signIn}</Link>
             </Button>
           </div>
         </section>
@@ -57,14 +57,14 @@ export default function HomePage() {
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                   <LayoutGrid className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="mb-2 text-xl font-semibold">{texts.home.kanbanBoard.title}</h3>
+                <h3 className="mb-2 text-xl font-semibold">{texts.tasks.kanbanTitle}</h3>
                 <p className="text-muted-foreground">{texts.home.kanbanBoard.description}</p>
               </div>
               <div className="flex flex-col items-center text-center">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                   <Calendar className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="mb-2 text-xl font-semibold">{texts.home.timelineView.title}</h3>
+                <h3 className="mb-2 text-xl font-semibold">{texts.nav.timeline}</h3>
                 <p className="text-muted-foreground">{texts.home.timelineView.description}</p>
               </div>
             </div>

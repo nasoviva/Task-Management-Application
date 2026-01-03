@@ -18,6 +18,7 @@ export const texts = {
     openMenu: "Open menu",
     account: "Account",
     signOut: "Sign out",
+    signIn: "Sign in",
   },
 
   // Home page
@@ -25,7 +26,6 @@ export const texts = {
     heroTitle: "Manage your tasks with ease",
     heroDescription: "Stay organized with powerful task management. View your work in Kanban boards or timeline views. Track deadlines and manage your productivity effortlessly.",
     startForFree: "Start for free",
-    signIn: "Sign in",
     getStarted: "Get started",
     featuresTitle: "Everything you need to stay productive",
     taskManagement: {
@@ -33,11 +33,9 @@ export const texts = {
       description: "Create, organize, and track your tasks with ease",
     },
     kanbanBoard: {
-      title: "Kanban Board",
       description: "Visualize your workflow with intuitive drag-and-drop boards",
     },
     timelineView: {
-      title: "Timeline View",
       description: "Plan ahead with timeline visualization and due dates",
     },
   },
@@ -54,7 +52,6 @@ export const texts = {
     emailPlaceholder: "you@example.com",
     passwordPlaceholder: "At least 6 characters",
     confirmPasswordPlaceholder: "Re-enter your password",
-    signIn: "Sign in",
     signUp: "Sign up",
     signingIn: "Signing in...",
     creatingAccount: "Creating account...",
@@ -72,11 +69,9 @@ export const texts = {
 
   // Task management
   tasks: {
-    title: "Tasks",
     description: "Manage and organize your tasks",
     kanbanTitle: "Kanban Board",
     kanbanDescription: "Visualize and manage your tasks with drag-and-drop",
-    timelineTitle: "Timeline",
     timelineDescription: "Visualize your tasks over time",
     createNew: "Create new task",
     createTask: "Create task",
@@ -113,6 +108,7 @@ export const texts = {
     taskTitlePlaceholder: "Task title",
     taskDescriptionPlaceholder: "Task description (optional)",
     selectDueDate: "Select due date",
+    dueDateRequired: "Due date is required",
     due: "Due:",
     created: "Created:",
     updated: "Updated:",
@@ -123,11 +119,21 @@ export const texts = {
     next: "Next",
     noTasksWithDueDates: "No tasks with due dates in {month}. Add due dates to your tasks to see them on the timeline!",
     tasksWithoutDueDates: "Tasks without due dates",
+    today: "Today",
+    noTasksVisibleInRange: "No tasks visible in this date range",
+    daysOfWeek: {
+      mon: "Mon",
+      tue: "Tue",
+      wed: "Wed",
+      thu: "Thu",
+      fri: "Fri",
+      sat: "Sat",
+      sun: "Sun",
+    },
   },
 
   // Dialog titles and descriptions
   dialogs: {
-    createTaskTitle: "Create new task",
     createTaskDescription: "Add a new task to your list. Fill in the details below.",
     editTaskTitle: "Edit task",
     editTaskDescription: "Update task details below.",

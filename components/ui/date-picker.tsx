@@ -27,6 +27,14 @@ export function DatePicker({ value, onChange, placeholder = "Pick a date", disab
 
   console.log("[DatePicker] Rendering with value:", value, "open:", open)
 
+  // Calculate default month: use selected date's month if available, otherwise current month
+  const defaultMonth = React.useMemo(() => {
+    if (value) {
+      return new Date(value.getFullYear(), value.getMonth(), 1)
+    }
+    return new Date()
+  }, [value])
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -44,17 +52,26 @@ export function DatePicker({ value, onChange, placeholder = "Pick a date", disab
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-3" align="start">
-        <DayPicker
-          mode="single"
-          selected={value}
-          onSelect={(date: Date | undefined) => {
-            console.log("[DatePicker] Date selected:", date)
-            onChange(date)
-            setOpen(false)
-          }}
-          locale={enUS}
-          initialFocus
-        />
+        <div className="h-[340px]">
+          <DayPicker
+            mode="single"
+            selected={value}
+            defaultMonth={defaultMonth}
+            onSelect={(date: Date | undefined) => {
+              console.log("[DatePicker] Date selected:", date)
+              onChange(date)
+              setOpen(false)
+            }}
+            locale={enUS}
+            initialFocus
+            disabled={(date) => {
+              // Disable dates before today
+              const today = new Date()
+              today.setHours(0, 0, 0, 0)
+              return date < today
+            }}
+          />
+        </div>
       </PopoverContent>
     </Popover>
   )

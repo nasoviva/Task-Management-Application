@@ -30,7 +30,7 @@ export default async function TimelinePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">{texts.tasks.timelineTitle}</h1>
+        <h1 className="text-3xl font-bold">{texts.nav.timeline}</h1>
         <p className="text-muted-foreground">{texts.tasks.timelineDescription}</p>
       </div>
       <TimelineView initialTasks={tasks || []} userId={user.id} />

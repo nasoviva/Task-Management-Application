@@ -156,7 +156,7 @@ export default function SignUpPage() {
                 <div className="mt-4 text-center text-sm text-muted-foreground">
                   {texts.auth.alreadyHaveAccount}{" "}
                   <Link href="/auth/login" className="text-foreground underline underline-offset-4 hover:text-primary">
-                    {texts.auth.signIn}
+                    {texts.nav.signIn}
                   </Link>
                 </div>
               </form>

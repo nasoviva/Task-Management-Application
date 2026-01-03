@@ -127,21 +127,19 @@ This section explains the key technical decisions made during development and wh
 - **Decision**: Pages fetch data on server (Server Components), interactive parts run on client (Client Components)
 - **Why**: Faster loading for users, better SEO, but still allows interactivity where needed
 
-### 5. **Optimistic UI Updates**
+### 4. **Optimistic UI Updates**
 - **Decision**: UI updates immediately when user deletes or changes task, before server responds
 - **Why**: Feels instant and responsive - user sees changes right away
 
-### 6. **Code Reusability**
+### 5. **Code Reusability**
 - **Decision**: Created shared components (`TaskFiltersBar`, `TaskActions`, `AuthHeader`) and hooks (`useTaskActions`, `useTaskFilters`)
 - **Why**: Same code used in multiple places - if we need to change something, change it once
 
 ## What Would I Improve with More Time?
 
-- Comprehensive unit tests for components
-- Integration tests for authentication flows
+- Tests for components and for authentication flows
 - Pagination for large task lists
-- Task categories/tags
-- Task priorities
+- Task categories/priorities
 - Export/import tasks (JSON, CSV)
 - Task statistics for a selected period
 - Trash bin for deleted tasks (with restore option)

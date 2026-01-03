@@ -121,7 +121,7 @@ export default function LoginPage() {
                   </div>
                   {error && <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? texts.auth.signingIn : texts.auth.signIn}
+                    {isLoading ? texts.auth.signingIn : texts.nav.signIn}
                   </Button>
                 </div>
                 <div className="mt-4 text-center text-sm text-muted-foreground">

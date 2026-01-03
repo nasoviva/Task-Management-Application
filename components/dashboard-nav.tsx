@@ -22,7 +22,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { texts } from "@/lib/constants/texts"
 
 interface DashboardNavProps {
@@ -34,6 +34,12 @@ export function DashboardNav({ user }: DashboardNavProps) {
   const pathname = usePathname()
   const supabase = createClient()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Only render Radix UI components after client-side hydration
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSignOut = async () => {
     console.log("[DashboardNav] Signing out user:", user.id)
@@ -81,14 +87,15 @@ export function DashboardNav({ user }: DashboardNavProps) {
             })}
           </nav>
           {/* Mobile Navigation Menu */}
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">{texts.nav.openMenu}</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+          {mounted ? (
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">{texts.nav.openMenu}</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px] sm:w-[400px]">
               <SheetHeader>
                 <SheetTitle>{texts.nav.navigation}</SheetTitle>
               </SheetHeader>
@@ -115,16 +122,23 @@ export function DashboardNav({ user }: DashboardNavProps) {
               </nav>
             </SheetContent>
           </Sheet>
+          ) : (
+            <Button variant="ghost" size="icon" className="md:hidden">
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">{texts.nav.openMenu}</span>
+            </Button>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+          {mounted ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium">{texts.nav.account}</p>
@@ -138,6 +152,11 @@ export function DashboardNav({ user }: DashboardNavProps) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          ) : (
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <User className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </div>
     </header>

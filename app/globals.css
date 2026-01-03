@@ -123,3 +123,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Override react-day-picker accent color from blue to black (light theme) */
+.rdp-root {
+  --rdp-accent-color: #000000 !important;
+}
+
+/* Override react-day-picker accent color to white (dark theme) */
+.dark .rdp-root {
+  --rdp-accent-color: #ffffff !important;
+}

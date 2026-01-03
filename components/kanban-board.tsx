@@ -5,16 +5,16 @@ import type React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { TaskFiltersBar } from "@/components/task-filters-bar"
 import { TaskActions } from "@/components/task-actions"
+import { TaskDateDisplay } from "@/components/task-date-display"
+import { TaskStatusBadge } from "@/components/task-status-badge"
+import { TaskTitle } from "@/components/task-title"
 import { useTaskFilters } from "@/lib/hooks/use-task-filters"
 import { useTaskActions } from "@/lib/hooks/use-task-actions"
-import { format } from "date-fns"
 import type { Task } from "@/lib/types/task"
-import { getStatusColor, getStatusLabel } from "@/lib/utils/task"
 import { texts } from "@/lib/constants/texts"
 
 interface KanbanBoardProps {
@@ -293,7 +293,7 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
                   >
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className={`font-medium leading-tight ${task.status === "done" ? "text-muted-foreground line-through" : ""}`}>{task.title}</h3>
+                        <TaskTitle task={task} className="leading-tight" />
                         <TaskActions
                           task={task}
                           userId={userId}
@@ -306,17 +306,10 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
                         <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
                       )}
                       <div className="flex items-center gap-2">
-                        <Badge className={getStatusColor(task.status)}>{getStatusLabel(task.status)}</Badge>
-                        {task.due_date && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            {texts.tasks.due} {format(new Date(task.due_date), "MMM d, yyyy")}
-                          </div>
-                        )}
+                        <TaskStatusBadge status={task.status} />
+                        <TaskDateDisplay date={task.due_date} type="due" />
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {texts.tasks.created} {format(new Date(task.created_at), "MMM d, yyyy")}
-                      </div>
+                      <TaskDateDisplay date={task.created_at} type="created" />
                     </div>
                   </Card>
                 ))}

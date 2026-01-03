@@ -13,11 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DatePicker } from "@/components/ui/date-picker"
+import { TaskFormFields } from "@/components/task-form-fields"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import type { Task } from "@/lib/types/task"
@@ -114,54 +110,27 @@ export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogPr
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>{texts.dialogs.createTaskTitle}</DialogTitle>
+            <DialogTitle>{texts.tasks.createNew}</DialogTitle>
             <DialogDescription>{texts.dialogs.createTaskDescription}</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title">{texts.tasks.taskTitle}</Label>
-              <Input
-                id="title"
-                placeholder={texts.tasks.taskTitlePlaceholder}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">{texts.tasks.taskDescription}</Label>
-              <Textarea
-                id="description"
-                placeholder={texts.tasks.taskDescriptionPlaceholder}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="status">{texts.tasks.status}</Label>
-              <Select value={status} onValueChange={(value: "todo" | "in-progress" | "done") => setStatus(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todo">{texts.tasks.toDo}</SelectItem>
-                  <SelectItem value="in-progress">{texts.tasks.inProgress}</SelectItem>
-                  <SelectItem value="done">{texts.tasks.done}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="due-date">{texts.tasks.dueDate}</Label>
-              <DatePicker value={dueDate} onChange={setDueDate} placeholder={texts.tasks.selectDueDate} />
-            </div>
+          <div className="grid gap-4 pt-[26px] pb-[26px]">
+            <TaskFormFields
+              title={title}
+              onTitleChange={setTitle}
+              description={description}
+              onDescriptionChange={setDescription}
+              status={status}
+              onStatusChange={setStatus}
+              dueDate={dueDate}
+              onDueDateChange={setDueDate}
+            />
             {error && <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               {texts.tasks.cancel}
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading || !title.trim() || !dueDate}>
               {isLoading ? texts.tasks.creating : texts.tasks.createTask}
             </Button>
           </DialogFooter>
