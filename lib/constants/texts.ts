@@ -139,11 +139,6 @@ export const texts = {
     editTaskDescription: "Update task details below.",
   },
 
-  // Footer
-  footer: {
-    copyright: "© 2026 TaskFlow. All rights reserved.",
-  },
-
   // 404 Not Found
   notFound: {
     title: "Page Not Found",
