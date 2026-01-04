@@ -23,23 +23,59 @@ export default function ResetPasswordPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // Supabase sends the reset token in the URL hash
-    // We need to check for it and handle the session
+    // Supabase can send reset token in two ways:
+    // 1. Code-based flow: URL query parameter ?code=...
+    // 2. Token-based flow: URL hash #access_token=...
     const handleResetToken = async () => {
+      const supabase = createClient()
+      
+      // Check for code in query parameters (code-based flow)
+      const urlParams = new URLSearchParams(window.location.search)
+      const code = urlParams.get("code")
+      
+      // Check for tokens in hash (token-based flow)
       const hashParams = new URLSearchParams(window.location.hash.substring(1))
       const accessToken = hashParams.get("access_token")
       const type = hashParams.get("type")
       const refreshToken = hashParams.get("refresh_token")
 
       console.log("[ResetPassword] Checking URL parameters:", { 
+        hasCode: !!code,
         hasAccessToken: !!accessToken, 
         type,
         hasRefreshToken: !!refreshToken 
       })
 
+      // Handle code-based flow (most common)
+      if (code) {
+        try {
+          console.log("[ResetPassword] Exchanging code for session...")
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          
+          if (exchangeError) {
+            console.error("[ResetPassword] Error exchanging code:", exchangeError)
+            setError(texts.auth.invalidResetToken)
+            return
+          }
+          
+          if (data.session) {
+            console.log("[ResetPassword] Session created successfully from code, user can now reset password")
+            // Clear the code from URL
+            window.history.replaceState({}, document.title, window.location.pathname)
+          } else {
+            console.error("[ResetPassword] No session created from code")
+            setError(texts.auth.invalidResetToken)
+          }
+        } catch (error) {
+          console.error("[ResetPassword] Error handling code:", error)
+          setError(texts.auth.invalidResetToken)
+        }
+        return
+      }
+
+      // Handle token-based flow (fallback)
       if (accessToken && type === "recovery" && refreshToken) {
         try {
-          const supabase = createClient()
           // Set the session with the tokens from the URL
           const { error: sessionError } = await supabase.auth.setSession({
             access_token: accessToken,
@@ -51,22 +87,24 @@ export default function ResetPasswordPage() {
             setError(texts.auth.invalidResetToken)
           } else {
             console.log("[ResetPassword] Session set successfully, user can now reset password")
+            // Clear the hash from URL
+            window.history.replaceState({}, document.title, window.location.pathname)
           }
         } catch (error) {
           console.error("[ResetPassword] Error handling reset token:", error)
           setError(texts.auth.invalidResetToken)
         }
-      } else if (!accessToken || type !== "recovery") {
-        // Check if user is already authenticated (might have clicked link while logged in)
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        if (!user) {
-          console.error("[ResetPassword] Missing or invalid reset token and user not authenticated")
-          setError(texts.auth.invalidResetToken)
-        } else {
-          console.log("[ResetPassword] User is authenticated, can proceed with password reset")
-        }
+        return
+      }
+
+      // If no code or token, check if user is already authenticated
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        console.error("[ResetPassword] Missing or invalid reset token and user not authenticated")
+        setError(texts.auth.invalidResetToken)
+      } else {
+        console.log("[ResetPassword] User is authenticated, can proceed with password reset")
       }
     }
 

@@ -31,10 +31,20 @@ export default function ForgotPasswordPage() {
       const supabase = createClient()
       console.log("[ForgotPassword] Supabase client created successfully")
 
-      // Use the full URL for redirect, ensuring it's properly formatted
-      const redirectUrl = typeof window !== "undefined" 
-        ? `${window.location.origin}/auth/reset-password`
-        : `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/reset-password`
+      // Use the full URL for redirect, ensuring it's properly formatted with protocol
+      // For production, use the actual domain, for local use localhost
+      let redirectUrl: string
+      if (typeof window !== "undefined") {
+        redirectUrl = `${window.location.protocol}//${window.location.host}/auth/reset-password`
+      } else {
+        // Server-side: use environment variable or default
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
+        if (siteUrl) {
+          redirectUrl = siteUrl.startsWith('http') ? `${siteUrl}/auth/reset-password` : `https://${siteUrl}/auth/reset-password`
+        } else {
+          redirectUrl = "http://localhost:3000/auth/reset-password"
+        }
+      }
       
       console.log("[ForgotPassword] Attempting to send reset email with redirect URL:", redirectUrl)
 

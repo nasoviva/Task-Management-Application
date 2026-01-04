@@ -72,6 +72,13 @@ yarn install
 1. Create a new project at [supabase.com](https://supabase.com)
 2. Go to your project settings → API
 3. Copy your project URL and anon key
+4. **Configure Redirect URLs** (required for password recovery):
+   - Go to **Authentication** → **URL Configuration**
+   - In the **Redirect URLs** section, add:
+     - For local development: `http://localhost:3000/auth/reset-password`
+     - For production: `https://your_project_url/auth/reset-password` (replace with your actual domain)
+   - **Important**: Make sure to include the full URL with protocol (http:// or https://)
+   - Click **Save** to apply changes
 
 ### 4. Configure Environment Variables
 
