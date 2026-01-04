@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="taskflow-theme">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="ToDone-theme">
           {children}
         </ThemeProvider>
         <Analytics />

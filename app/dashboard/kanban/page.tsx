@@ -28,10 +28,10 @@ export default async function KanbanPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">{texts.tasks.kanbanTitle}</h1>
-        <p className="text-muted-foreground">{texts.tasks.kanbanDescription}</p>
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+      <div className="mb-4 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold">{texts.tasks.kanbanTitle}</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">{texts.tasks.kanbanDescription}</p>
       </div>
       <KanbanBoard initialTasks={tasks || []} userId={user.id} />
     </div>

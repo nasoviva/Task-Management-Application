@@ -5,8 +5,8 @@
 
 export const texts = {
   // App name and branding
-  appName: "TaskFlow",
-  appTitle: "TaskFlow - Task Management App",
+  appName: "ToDone",
+  appTitle: "ToDone - Task Management App",
   appDescription: "Manage your tasks with ease using Kanban boards and timeline views",
 
   // Navigation
@@ -65,6 +65,22 @@ export const texts = {
     passwordTooShort: "Password must be at least 6 characters",
     anErrorOccurred: "An error occurred",
     mustBeLoggedIn: "You must be logged in to create tasks",
+    forgotPassword: "Forgot password?",
+    resetPassword: "Reset password",
+    resetPasswordTitle: "Reset your password",
+    resetPasswordDescription: "Enter your email address and we'll send you a link to reset your password",
+    sendResetLink: "Send reset link",
+    sendingResetLink: "Sending...",
+    resetLinkSent: "Reset link sent",
+    resetLinkSentDescription: "If an account exists with this email, we've sent you a password reset link. Please check your email.",
+    newPassword: "New password",
+    confirmNewPassword: "Confirm new password",
+    updatePassword: "Update password",
+    updatingPassword: "Updating...",
+    passwordResetSuccess: "Password reset successfully",
+    passwordResetSuccessDescription: "Your password has been reset successfully. You can now sign in with your new password.",
+    invalidResetToken: "Invalid or expired reset token",
+    passwordResetFailed: "Failed to reset password",
   },
 
   // Task management

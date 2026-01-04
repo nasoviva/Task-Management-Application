@@ -1,8 +1,8 @@
-# TaskFlow - Task Management Application
+# ToDone - Task Management Application
 
 A modern task management application built with Next.js 16 and Supabase, featuring authentication, Kanban boards, timeline views, and comprehensive task management capabilities.
 
-🌐 **Live Demo**: [https://task-management-application-nasoviva.vercel.app](https://task-management-application-nasoviva.vercel.app)
+🌐 **Live Demo**: [https://to-done-nasoviva.vercel.app](https://to-done-nasoviva.vercel.app)
 
 ## Features
 
@@ -11,6 +11,7 @@ A modern task management application built with Next.js 16 and Supabase, featuri
   - Sign up with email/password
   - Sign in / Sign out
   - Email verification
+  - Password recovery (forgot password)
 
 - **Task Management**
   - Create tasks with title, description, and due date

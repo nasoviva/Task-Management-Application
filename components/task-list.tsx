@@ -106,11 +106,15 @@ export function TaskList({ initialTasks, userId, onCreateTask }: TaskListProps) 
                     onCheckedChange={() => handleToggleComplete(task.id, task.status)}
                     className="mt-1"
                   />
-                  <div className="flex-1 space-y-2">
+                  <div className="flex-1 space-y-2 min-w-0">
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <TaskTitle task={task} />
-                        {task.description && <p className="mt-1 text-sm text-muted-foreground">{task.description}</p>}
+                        {task.description && (
+                          <p className="mt-1 text-sm text-muted-foreground break-words overflow-hidden line-clamp-4">
+                            {task.description}
+                          </p>
+                        )}
                       </div>
                       <TaskActions
                         task={task}

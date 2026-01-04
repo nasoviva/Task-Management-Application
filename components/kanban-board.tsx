@@ -252,7 +252,7 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 md:space-y-6 w-full max-w-full overflow-hidden">
       <TaskFiltersBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -260,26 +260,26 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
         onStatusFilterChange={setStatusFilter}
         onTaskCreated={(task) => handleTaskCreated(task, false)}
       />
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-3 md:gap-6 md:grid-cols-3 w-full max-w-full">
       {columns.map((column) => {
         const columnTasks = getTasksByStatus(column.status)
         return (
-          <div key={column.status} className="flex flex-col gap-4">
+          <div key={column.status} className="flex flex-col gap-2 md:gap-4 min-w-0">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">{column.title}</h2>
-              <Badge variant="secondary">{columnTasks.length}</Badge>
+              <h2 className="text-base md:text-lg font-semibold">{column.title}</h2>
+              <Badge variant="secondary" className="text-xs md:text-sm">{columnTasks.length}</Badge>
             </div>
             <div
-              className="min-h-[500px] rounded-lg border-2 border-dashed bg-muted/20 p-4 transition-colors hover:border-muted-foreground/50"
+              className="min-h-[300px] md:min-h-[500px] rounded-lg border-2 border-dashed bg-muted/20 p-2 md:p-4 transition-colors hover:border-muted-foreground/50 w-full box-border"
               onDragOver={handleDragOver}
               onDrop={() => handleDrop(column.status)}
               data-drop-zone={column.status}
             >
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3 w-full">
                 {columnTasks.map((task) => (
                   <Card
                     key={task.id}
-                    className="cursor-move p-4 transition-shadow hover:shadow-md select-none"
+                    className="cursor-move p-2 md:p-4 transition-shadow hover:shadow-md select-none overflow-hidden w-full box-border"
                     draggable
                     onDragStart={() => handleDragStart(task)}
                     onTouchStart={(e) => {
@@ -291,21 +291,25 @@ export function KanbanBoard({ initialTasks, userId }: KanbanBoardProps) {
                       handleTouchStart(e, task)
                     }}
                   >
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <TaskTitle task={task} className="leading-tight" />
-                        <TaskActions
-                          task={task}
-                          userId={userId}
-                          onTaskUpdated={handleTaskUpdated}
-                          onDelete={handleDelete}
-                          size="small"
-                        />
+                    <div className="space-y-2 md:space-y-3 min-w-0">
+                      <div className="flex items-start justify-between gap-1.5 md:gap-2 min-w-0">
+                        <div className="flex-1 min-w-0">
+                          <TaskTitle task={task} className="leading-tight truncate text-sm md:text-base" />
+                        </div>
+                        <div className="flex-shrink-0">
+                          <TaskActions
+                            task={task}
+                            userId={userId}
+                            onTaskUpdated={handleTaskUpdated}
+                            onDelete={handleDelete}
+                            size="small"
+                          />
+                        </div>
                       </div>
                       {task.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
+                        <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 break-words overflow-hidden min-w-0">{task.description}</p>
                       )}
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
                         <TaskStatusBadge status={task.status} />
                         <TaskDateDisplay date={task.due_date} type="due" />
                       </div>
