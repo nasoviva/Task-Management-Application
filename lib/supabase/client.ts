@@ -18,5 +18,7 @@ export function createClient() {
 
   console.log("[Supabase Client] Initializing client with URL:", supabaseUrl.substring(0, 30) + "...")
   
+  // createBrowserClient automatically handles cookies for PKCE code verifier
+  // It uses browser's document.cookie API to store and retrieve the code verifier
   return createBrowserClient(supabaseUrl, supabaseAnonKey)
 }

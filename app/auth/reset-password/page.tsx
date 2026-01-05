@@ -47,29 +47,37 @@ export default function ResetPasswordPage() {
       })
 
       // Handle code-based flow (most common)
+      // Code is handled by callback route on the server to avoid PKCE code verifier issues
       if (code) {
-        try {
-          console.log("[ResetPassword] Exchanging code for session...")
-          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-          
-          if (exchangeError) {
-            console.error("[ResetPassword] Error exchanging code:", exchangeError)
-            setError(texts.auth.invalidResetToken)
-            return
-          }
-          
-          if (data.session) {
-            console.log("[ResetPassword] Session created successfully from code, user can now reset password")
-            // Clear the code from URL
-            window.history.replaceState({}, document.title, window.location.pathname)
-          } else {
-            console.error("[ResetPassword] No session created from code")
-            setError(texts.auth.invalidResetToken)
-          }
-        } catch (error) {
-          console.error("[ResetPassword] Error handling code:", error)
-          setError(texts.auth.invalidResetToken)
+        console.log("[ResetPassword] Code found, redirecting to callback route for server-side processing")
+        window.location.href = `/auth/reset-password-callback?code=${encodeURIComponent(code)}`
+        return
+      }
+      
+      // Check for error from callback route
+      const routeError = urlParams.get("error")
+      const routeErrorCode = urlParams.get("error_code")
+      const routeErrorMessage = urlParams.get("error_message")
+      
+      if (routeError) {
+        console.error("[ResetPassword] Error from callback route:", { 
+          error: routeError,
+          errorCode: routeErrorCode,
+          errorMessage: routeErrorMessage
+        })
+        
+        let errorMessage = routeErrorMessage || texts.auth.invalidResetToken
+        
+        if (routeErrorCode === "exchange_failed" || routeError === "exchange_failed") {
+          errorMessage = "Failed to verify reset link. The link may have expired. Please request a new password reset link."
+        } else if (routeErrorCode === "no_session" || routeError === "no_session") {
+          errorMessage = "Failed to create session. Please try again or request a new password reset link."
         }
+        
+        setError(errorMessage)
+        
+        // Clear error from URL
+        window.history.replaceState({}, document.title, window.location.pathname)
         return
       }
 

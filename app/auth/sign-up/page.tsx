@@ -47,8 +47,39 @@ export default function SignUpPage() {
       const supabase = createClient()
       console.log("[SignUp] Supabase client created successfully")
 
-      const redirectUrl = process.env.NEXT_PUBLIC_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`
+      // Redirect to auth callback - this will handle the code exchange automatically
+      // Supabase will redirect to this URL with the code, and we'll exchange it for a session
+      // For production, always use NEXT_PUBLIC_SITE_URL if available
+      let redirectUrl: string
+      if (typeof window !== "undefined") {
+        // Check if we're in production (not localhost)
+        const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+        
+        if (isProduction && process.env.NEXT_PUBLIC_SITE_URL) {
+          // Use environment variable for production
+          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+          redirectUrl = siteUrl.startsWith('http') 
+            ? `${siteUrl}/auth/callback` 
+            : `https://${siteUrl}/auth/callback`
+        } else {
+          // Use current origin for local development or if no env var
+          redirectUrl = `${window.location.origin}/auth/callback`
+        }
+      } else {
+        // Server-side: use environment variable or default
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
+        if (siteUrl) {
+          redirectUrl = siteUrl.startsWith('http') 
+            ? `${siteUrl}/auth/callback` 
+            : `https://${siteUrl}/auth/callback`
+        } else {
+          redirectUrl = "http://localhost:3000/auth/callback"
+        }
+      }
+      
       console.log("[SignUp] Attempting signup with redirect URL:", redirectUrl)
+      console.log("[SignUp] Current origin:", typeof window !== "undefined" ? window.location.origin : "server-side")
+      console.log("[SignUp] NEXT_PUBLIC_SITE_URL:", process.env.NEXT_PUBLIC_SITE_URL)
 
       const { data, error } = await supabase.auth.signUp({
         email,

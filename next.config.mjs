@@ -9,13 +9,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Explicitly set the workspace root to prevent Next.js from inferring the wrong directory
-  // when multiple lockfiles are detected in parent directories
-  experimental: {
-    turbo: {
-      root: __dirname,
-    },
-  },
 }
 
 export default nextConfig

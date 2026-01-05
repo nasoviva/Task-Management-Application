@@ -1,16 +1,13 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Home, ArrowLeft } from "lucide-react"
+import { Home } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { Footer } from "@/components/footer"
 import { AuthHeader } from "@/components/auth-header"
 import { texts } from "@/lib/constants/texts"
 
 export default function NotFound() {
-  const router = useRouter()
-
   return (
     <div className="flex min-h-screen flex-col">
       <AuthHeader />
@@ -22,16 +19,12 @@ export default function NotFound() {
             <h2 className="mb-2 text-3xl font-semibold">{texts.notFound.title}</h2>
             <p className="text-muted-foreground">{texts.notFound.description}</p>
           </div>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center">
             <Button asChild>
-              <Link href="/">
+              <Link href="/" className="flex items-center">
                 <Home className="mr-2 h-4 w-4" />
                 {texts.notFound.goHome}
               </Link>
-            </Button>
-            <Button variant="outline" onClick={() => router.back()}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {texts.notFound.goBack}
             </Button>
           </div>
         </div>

@@ -31,18 +31,32 @@ export default function ForgotPasswordPage() {
       const supabase = createClient()
       console.log("[ForgotPassword] Supabase client created successfully")
 
-      // Use the full URL for redirect, ensuring it's properly formatted with protocol
-      // For production, use the actual domain, for local use localhost
+      // Redirect to reset-password-callback - this will handle the code exchange automatically
+      // Supabase will redirect to this URL with the code, and we'll exchange it for a session
       let redirectUrl: string
       if (typeof window !== "undefined") {
-        redirectUrl = `${window.location.protocol}//${window.location.host}/auth/reset-password`
+        // Check if we're in production (not localhost)
+        const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+        
+        if (isProduction && process.env.NEXT_PUBLIC_SITE_URL) {
+          // Use environment variable for production
+          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+          redirectUrl = siteUrl.startsWith('http') 
+            ? `${siteUrl}/auth/reset-password-callback` 
+            : `https://${siteUrl}/auth/reset-password-callback`
+        } else {
+          // Use current origin for local development or if no env var
+          redirectUrl = `${window.location.origin}/auth/reset-password-callback`
+        }
       } else {
         // Server-side: use environment variable or default
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
         if (siteUrl) {
-          redirectUrl = siteUrl.startsWith('http') ? `${siteUrl}/auth/reset-password` : `https://${siteUrl}/auth/reset-password`
+          redirectUrl = siteUrl.startsWith('http') 
+            ? `${siteUrl}/auth/reset-password-callback` 
+            : `https://${siteUrl}/auth/reset-password-callback`
         } else {
-          redirectUrl = "http://localhost:3000/auth/reset-password"
+          redirectUrl = "http://localhost:3000/auth/reset-password-callback"
         }
       }
       
