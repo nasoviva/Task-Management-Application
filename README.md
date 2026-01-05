@@ -78,14 +78,14 @@ yarn install
    a. **Set Site URL**:
       - Go to **Authentication** → **URL Configuration**
       - In the **Site URL** field, set:
-        - For production: `https://to-done-nasoviva.vercel.app` (replace with your actual domain)
+        - For production: `https://your_project_url/` (replace with your actual domain)
         - For local development: `http://localhost:3000`
       - This is the base URL that Supabase uses for redirects
    
    b. **Add Redirect URLs**:
       - In the **Redirect URLs** section, add each URL on a new line:
-        - `https://to-done-nasoviva.vercel.app/auth/callback` (for production email verification)
-        - `https://to-done-nasoviva.vercel.app/auth/reset-password-callback` (for production password reset)
+        - `https://your_project_url/auth/callback` (for production email verification)
+        - `https://your_project_url/auth/reset-password-callback` (for production password reset)
         - `http://localhost:3000/auth/callback` (for local email verification)
         - `http://localhost:3000/auth/reset-password-callback` (for local password reset)
       - **Important**: 
@@ -94,14 +94,6 @@ yarn install
         - URLs must match exactly (no trailing slashes)
         - Each URL on a separate line
       - Click **Save** to apply changes
-   
-   **Troubleshooting**: If you see errors like "requested path is invalid" or URLs like `https://your-project.supabase.co/your-domain.com`:
-      - **Site URL** must be set to: `https://to-done-nasoviva.vercel.app` (with https:// and NO trailing slash)
-      - **Redirect URLs** must include the full URL: `https://to-done-nasoviva.vercel.app/auth/callback`
-      - URLs must match exactly (including protocol https://)
-      - No trailing slashes in URLs
-      - Make sure to click **Save** after making changes
-      - Wait a few seconds for changes to propagate
 
 ### 4. Configure Environment Variables
 
@@ -114,12 +106,12 @@ yarn install
    ```env
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   NEXT_PUBLIC_SITE_URL=https://to-done-nasoviva.vercel.app
+   NEXT_PUBLIC_SITE_URL=https://your_project_url/
    ```
    
    For local development, you can omit `NEXT_PUBLIC_SITE_URL` or set it to `http://localhost:3000`.
    
-   For production (Vercel), set `NEXT_PUBLIC_SITE_URL` to your production domain (e.g., `https://to-done-nasoviva.vercel.app`).
+   For production (Vercel), set `NEXT_PUBLIC_SITE_URL` to your production domain (e.g., `https://your_project_url/`).
 
    Replace `your_supabase_project_url` and `your_supabase_anon_key` with the values from step 3.
 
