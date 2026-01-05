@@ -41,6 +41,15 @@ export default function VerifyEmailPage() {
       const hasError = hasQueryError || hasHashError
       
       if (hasError) {
+        // Check if user is already authenticated - if so, redirect to dashboard
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          console.log("[VerifyEmail] User is already authenticated despite error, redirecting to dashboard")
+          router.push("/dashboard")
+          router.refresh()
+          return
+        }
+        
         const finalError = hashError || errorParam
         const finalErrorCode = hashErrorCode || errorCode
         const finalErrorDescription = hashErrorDescription || errorDescription
