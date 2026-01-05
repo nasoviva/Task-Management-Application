@@ -19,7 +19,7 @@ A modern task management application built with Next.js 16 and Supabase, featuri
   - Mark tasks as complete or incomplete
   - Edit existing tasks
   - Delete tasks
-  - Filter tasks by status (all / complete / incomplete / todo / in-progress / done)
+  - Filter tasks by status (all / todo / in-progress / done / incomplete)
   - Search tasks by title or description
   - Sort tasks by creation date or due date
 
@@ -35,7 +35,6 @@ A modern task management application built with Next.js 16 and Supabase, featuri
 - **Styling**: Tailwind CSS
 - **UI Components**: Radix UI (via shadcn/ui)
 - **Type Safety**: TypeScript
-- **Date Handling**: date-fns, react-day-picker
 
 ## Prerequisites
 
@@ -72,11 +71,12 @@ yarn install
 1. Create a new project at [supabase.com](https://supabase.com)
 2. Go to your project settings → API
 3. Copy your project URL and anon key
-4. **Configure Redirect URLs** (required for password recovery):
+4. Configure Redirect URLs:
    - Go to **Authentication** → **URL Configuration**
    - In the **Redirect URLs** section, add:
-     - For local development: `http://localhost:3000/auth/reset-password`
-     - For production: `https://your_project_url/auth/reset-password` (replace with your actual domain)
+     - For production: `https://your_project_url/` (replace with your actual domain)
+     - For production (for password recovery): `https://your_project_url/auth/reset-password` (replace with your actual domain)
+     - For local development (for password recovery): `http://localhost:3000/auth/reset-password`
    - **Important**: Make sure to include the full URL with protocol (http:// or https://)
    - Click **Save** to apply changes
 
@@ -155,6 +155,7 @@ This section explains the key technical decisions made during development and wh
 - Offline support with service workers
 - Create user guide/documentation
 - Multi-language support
+- Custom SMTP email configuration with a verified domain for reliable authentication emails
 
 ## Contributing
 
